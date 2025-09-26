@@ -1,7 +1,8 @@
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import type { ServiceAccount } from 'firebase-admin/app';
 
-type ServiceAccount = {
+type ServiceAccountConfig = {
   project_id: string;
   client_email: string;
   private_key: string;
@@ -10,7 +11,7 @@ type ServiceAccount = {
 
 let firebaseApp: App | undefined;
 
-function getServiceAccountConfig(): ServiceAccount {
+function getServiceAccountConfig(): ServiceAccountConfig {
   const base64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
   const json = process.env.FIREBASE_SERVICE_ACCOUNT;
 
@@ -34,7 +35,7 @@ export function initFirebaseAdmin() {
     } else {
       const credentials = getServiceAccountConfig();
       firebaseApp = initializeApp({
-        credential: cert(credentials),
+        credential: cert(credentials as ServiceAccount),
       });
     }
   }
