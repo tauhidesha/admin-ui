@@ -7,9 +7,17 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')
 
 const buildApiUrl = (path: string) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  if (API_BASE) {
+
+  const isBrowser = typeof window !== 'undefined';
+  const isSecureContext = isBrowser && window.location.protocol === 'https:';
+  const isInsecureBase = API_BASE.startsWith('http://');
+
+  const shouldUseRelativePath = !API_BASE || (isBrowser && isSecureContext && isInsecureBase);
+
+  if (!shouldUseRelativePath && API_BASE) {
     return `${API_BASE}${normalizedPath}`;
   }
+
   return `/api${normalizedPath}`;
 };
 
@@ -337,7 +345,7 @@ export default function AdminConsole() {
 
     setIsSending(true);
     try {
-      const sendMessageUrl = `${API_BASE}/send-message`;
+      const sendMessageUrl = buildApiUrl('/send-message');
       const payload = {
         number: selectedNumber,
         message: trimmed,

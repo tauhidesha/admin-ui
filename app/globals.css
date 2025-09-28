@@ -231,12 +231,15 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .content__header-info {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .content__header-info h2 {
@@ -255,6 +258,8 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
 }
 
 .content__header-actions--mobile {
@@ -543,6 +548,15 @@ button:disabled {
     border: none;
     box-shadow: none;
     color: #f1f4ff;
+  }
+
+  .content__header-info {
+    flex: 1 1 100%;
+  }
+
+  .content__header-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .ai-status {
