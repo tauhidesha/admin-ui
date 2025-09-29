@@ -1,5 +1,6 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { Firestore, DocumentData } from 'firebase-admin/firestore';
+import { normalizeSenderNumber as normalizeIdentitySender } from './identity';
 
 export interface SnoozeInfo {
   active: boolean;
@@ -11,12 +12,7 @@ export interface SnoozeInfo {
   updatedAt: string | null;
 }
 
-export function normalizeSenderNumber(value: string) {
-  if (!value) return value;
-  const trimmed = value.trim();
-  if (!trimmed) return trimmed;
-  return trimmed.endsWith('@c.us') ? trimmed : `${trimmed}@c.us`;
-}
+export const normalizeSenderNumber = normalizeIdentitySender;
 
 export async function setSnoozeMode(
   db: Firestore,

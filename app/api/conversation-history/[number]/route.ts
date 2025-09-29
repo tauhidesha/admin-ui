@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { getFirestoreDb } from '@/lib/firebaseAdmin';
 import { getSnoozeInfo, normalizeSenderNumber } from '@/lib/snooze';
+import { parseSenderIdentity } from '@/lib/identity';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -25,12 +26,13 @@ export async function GET(
     const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 200;
 
     const rawNumber = params.number;
-    const senderNumber = rawNumber.replace(/[^0-9]/g, '');
-    if (!senderNumber) {
+    const identity = parseSenderIdentity(rawNumber);
+
+    if (!identity.docId) {
       return NextResponse.json({ error: 'Nomor pelanggan tidak valid.' }, { status: 400 });
     }
 
-    const docId = senderNumber;
+    const docId = identity.docId;
     const db = getFirestoreDb();
     const messagesRef = db.collection('directMessages').doc(docId).collection('messages');
 
@@ -49,10 +51,12 @@ export async function GET(
 
     history.reverse();
 
-    const snoozeInfo = await getSnoozeInfo(db, normalizeSenderNumber(senderNumber));
+    const snoozeInfo = await getSnoozeInfo(db, normalizeSenderNumber(identity.normalizedAddress));
 
     return NextResponse.json({
-      senderNumber,
+      senderNumber: identity.docId,
+      channel: identity.channel,
+      platformId: identity.platformId,
       messageCount: history.length,
       history,
       aiPaused: snoozeInfo.active,
