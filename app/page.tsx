@@ -65,6 +65,8 @@ interface ConversationResponse {
   history: ConversationMessage[];
   aiPaused?: boolean;
   aiPauseInfo?: AiPauseInfo;
+  channel?: string | null;
+  platformId?: string | null;
 }
 
 interface ConversationSummary {
@@ -80,6 +82,8 @@ interface ConversationSummary {
   aiPausedUntil?: string | null;
   aiPausedManual?: boolean;
   aiPausedReason?: string | null;
+  channel?: string | null;
+  platformId?: string | null;
 }
 
 interface ConversationListResponse {
@@ -141,6 +145,50 @@ function formatWhatsappText(text: string) {
   const withItalic = withBold.replace(/_(.*?)_/g, '<em>$1</em>');
   const withStrike = withItalic.replace(/~(.*?)~/g, '<s>$1</s>');
   return { __html: withStrike };
+}
+
+const CHANNEL_META: Record<string, { label: string; tag: string; pillClass: string }> = {
+  whatsapp: { label: 'WhatsApp', tag: 'WA', pillClass: 'pill-channel--whatsapp' },
+  messenger: { label: 'Messenger', tag: 'Messenger', pillClass: 'pill-channel--messenger' },
+  instagram: { label: 'Instagram DM', tag: 'Instagram', pillClass: 'pill-channel--instagram' },
+};
+
+const DEFAULT_CHANNEL_META = { label: 'Unknown', tag: 'Unknown', pillClass: 'pill-channel--unknown' };
+
+function normalizeChannelKey(channel?: string | null) {
+  if (!channel) return 'whatsapp';
+  const lower = channel.toLowerCase();
+  const [key] = lower.split(':');
+  return key || 'unknown';
+}
+
+function getChannelMeta(channel?: string | null) {
+  const key = normalizeChannelKey(channel);
+  return CHANNEL_META[key] || DEFAULT_CHANNEL_META;
+}
+
+type ConversationLike = {
+  name?: string | null;
+  senderNumber: string;
+  platformId?: string | null;
+  channel?: string | null;
+};
+
+function getConversationDisplayName(conversation: ConversationLike | null | undefined) {
+  if (!conversation) return '';
+  const name = conversation.name?.trim();
+  const senderId = conversation.senderNumber;
+  const platformId = conversation.platformId?.trim();
+  if (name && name !== senderId && (!platformId || name !== platformId)) {
+    return name;
+  }
+
+  const channelKey = normalizeChannelKey(conversation.channel);
+  if (channelKey !== 'whatsapp' && conversation.platformId) {
+    return conversation.platformId;
+  }
+
+  return conversation.senderNumber;
 }
 
 export default function AdminConsole() {
@@ -279,6 +327,15 @@ export default function AdminConsole() {
     return listData.conversations.find((conversation) => conversation.senderNumber === selectedNumber) || null;
   }, [listData, selectedNumber]);
 
+  const activeChannelMeta = useMemo(
+    () => getChannelMeta(activeConversation?.channel ?? activeConversation?.senderNumber),
+    [activeConversation?.channel, activeConversation?.senderNumber]
+  );
+
+  const isWhatsappConversation = normalizeChannelKey(
+    activeConversation?.channel ?? activeConversation?.senderNumber
+  ) === 'whatsapp';
+
   const handleSelectConversation = useCallback(
     (senderNumber: string) => {
       setSelectedNumber(senderNumber);
@@ -342,6 +399,10 @@ export default function AdminConsole() {
       alert('Pengiriman pesan membutuhkan konfigurasi NEXT_PUBLIC_API_BASE_URL yang mengarah ke backend WhatsApp.');
       return;
     }
+    if (!isWhatsappConversation) {
+      alert('Saat ini balasan dari admin UI hanya tersedia untuk percakapan WhatsApp.');
+      return;
+    }
 
     setIsSending(true);
     try {
@@ -383,12 +444,13 @@ export default function AdminConsole() {
   const renderConversationItem = useCallback(
     (conversation: ConversationSummary) => {
       const isActive = conversation.senderNumber === selectedNumber;
-      const displayName = conversation.name || conversation.senderNumber;
+      const displayName = getConversationDisplayName(conversation);
       const subtitle = conversation.lastMessage || 'Belum ada pesan';
       const timestamp = conversation.lastMessageAt || conversation.updatedAt;
       const formattedTimestamp = formatIsoTimestamp(timestamp);
       const isPaused = conversation.aiPaused ?? false;
       const hasNotification = notifications.some((item) => item.senderNumber === conversation.senderNumber);
+      const channelMeta = getChannelMeta(conversation.channel ?? conversation.senderNumber);
 
       return (
         <button
@@ -400,6 +462,12 @@ export default function AdminConsole() {
           <div className="conversation-item__header">
             <div className="conversation-item__title">
               <span className="conversation-item__name">{displayName}</span>
+              <span
+                className={`pill pill-channel ${channelMeta.pillClass}`}
+                title={channelMeta.label}
+              >
+                {channelMeta.tag}
+              </span>
               {isPaused && <span className="pill pill-warning">AI OFF</span>}
             </div>
             {formattedTimestamp ? (
@@ -473,7 +541,7 @@ export default function AdminConsole() {
       case 'admin':
         return 'Admin';
       default:
-        return activeConversation?.name || activeConversation?.senderNumber || 'Pelanggan';
+        return getConversationDisplayName(activeConversation) || 'Pelanggan';
     }
   }, [activeConversation]);
 
@@ -545,8 +613,18 @@ export default function AdminConsole() {
           <>
             <header className="content__header">
               <div className="content__header-info">
-                <h2>{activeConversation.name || activeConversation.senderNumber}</h2>
-                <p className="muted">{activeConversation.senderNumber}</p>
+                <h2>{getConversationDisplayName(activeConversation)}</h2>
+                <div className="content__header-meta">
+                  <span className="muted" title={activeConversation.senderNumber}>
+                    {activeConversation.platformId || activeConversation.senderNumber}
+                  </span>
+                  <span
+                    className={`pill pill-channel ${activeChannelMeta.pillClass}`}
+                    title={activeChannelMeta.label}
+                  >
+                    {activeChannelMeta.tag}
+                  </span>
+                </div>
                 <div className="ai-status">
                   <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
                     {aiPaused ? 'AI OFF' : 'AI ON'}
@@ -641,9 +719,14 @@ export default function AdminConsole() {
                     Setel <code>NEXT_PUBLIC_API_BASE_URL</code> agar admin bisa membalas via WhatsApp bot.
                   </span>
                 )}
+                {canSendMessages && !isWhatsappConversation && (
+                  <span className="composer__hint">
+                    Chat berasal dari {activeChannelMeta.label}. Balasan admin UI hanya tersedia untuk WhatsApp.
+                  </span>
+                )}
                 <button
                   type="button"
-                  disabled={!selectedNumber || isSending || !canSendMessages}
+                  disabled={!selectedNumber || isSending || !canSendMessages || !isWhatsappConversation}
                   onClick={handleSendMessage}
                 >
                   {isSending ? 'Mengirim...' : 'Kirim'}
