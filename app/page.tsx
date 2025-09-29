@@ -332,9 +332,11 @@ export default function AdminConsole() {
     [activeConversation?.channel, activeConversation?.senderNumber]
   );
 
-  const isWhatsappConversation = normalizeChannelKey(
+  const activeChannelKey = normalizeChannelKey(
     activeConversation?.channel ?? activeConversation?.senderNumber
-  ) === 'whatsapp';
+  );
+  const isWhatsappConversation = activeChannelKey === 'whatsapp';
+  const isSupportedChannel = ['whatsapp', 'instagram', 'messenger'].includes(activeChannelKey);
 
   const handleSelectConversation = useCallback(
     (senderNumber: string) => {
@@ -396,11 +398,11 @@ export default function AdminConsole() {
     const trimmed = message.trim();
     if (!trimmed || !selectedNumber) return;
     if (!canSendMessages) {
-      alert('Pengiriman pesan membutuhkan konfigurasi NEXT_PUBLIC_API_BASE_URL yang mengarah ke backend WhatsApp.');
+      alert('Pengiriman pesan membutuhkan konfigurasi NEXT_PUBLIC_API_BASE_URL yang mengarah ke backend.');
       return;
     }
-    if (!isWhatsappConversation) {
-      alert('Saat ini balasan dari admin UI hanya tersedia untuk percakapan WhatsApp.');
+    if (!isSupportedChannel) {
+      alert('Balasan untuk kanal ini belum didukung dari admin UI.');
       return;
     }
 
@@ -410,6 +412,8 @@ export default function AdminConsole() {
       const payload = {
         number: selectedNumber,
         message: trimmed,
+        channel: activeConversation?.channel ?? activeChannelKey,
+        platformId: activeConversation?.platformId || null,
       };
 
       const res = await fetch(sendMessageUrl, {
@@ -716,17 +720,22 @@ export default function AdminConsole() {
               <div className="composer__actions">
                 {!canSendMessages && (
                   <span className="composer__hint">
-                    Setel <code>NEXT_PUBLIC_API_BASE_URL</code> agar admin bisa membalas via WhatsApp bot.
+                    Setel <code>NEXT_PUBLIC_API_BASE_URL</code> agar admin bisa membalas via backend bot.
                   </span>
                 )}
-                {canSendMessages && !isWhatsappConversation && (
+                {canSendMessages && !isSupportedChannel && (
                   <span className="composer__hint">
-                    Chat berasal dari {activeChannelMeta.label}. Balasan admin UI hanya tersedia untuk WhatsApp.
+                    Chat berasal dari kanal {activeChannelMeta.label}. Balasan admin UI untuk kanal ini belum didukung.
+                  </span>
+                )}
+                {canSendMessages && isSupportedChannel && !isWhatsappConversation && (
+                  <span className="composer__hint">
+                    Balasan admin akan dikirim melalui {activeChannelMeta.label}.
                   </span>
                 )}
                 <button
                   type="button"
-                  disabled={!selectedNumber || isSending || !canSendMessages || !isWhatsappConversation}
+                  disabled={!selectedNumber || isSending || !canSendMessages || !isSupportedChannel}
                   onClick={handleSendMessage}
                 >
                   {isSending ? 'Mengirim...' : 'Kirim'}

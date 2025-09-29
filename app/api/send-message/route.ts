@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const { number, message } = payload ?? {};
+    const { number, message, channel, platformId } = payload ?? {};
 
     if (!number || typeof number !== 'string') {
       return NextResponse.json(
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ number, message }),
+      body: JSON.stringify({ number, message, channel, platformId }),
     });
 
     const contentType = response.headers.get('content-type') ?? '';
