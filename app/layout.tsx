@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 
 export const metadata = {
   title: 'Bosmat Admin Console',
-  description: 'Dashboard untuk menangani chat dan booking WhatsApp AI',
+  description: 'Dashboard untuk menangani chat dan booking WhatsApp AI Bosmat',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
