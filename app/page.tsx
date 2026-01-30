@@ -10,6 +10,10 @@ const buildApiUrl = (path: string) => {
 
   // Langsung gunakan API_BASE jika ada. Jangan fallback ke /api karena tidak ada proxy.
   if (API_BASE) {
+    // Fix: Jika user lupa menulis https://, kita tambahkan otomatis agar tidak dianggap relative path
+    if (!API_BASE.startsWith('http')) {
+      return `https://${API_BASE}${normalizedPath}`;
+    }
     return `${API_BASE}${normalizedPath}`;
   }
 
