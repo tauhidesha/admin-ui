@@ -8,13 +8,8 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '')
 const buildApiUrl = (path: string) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-  const isBrowser = typeof window !== 'undefined';
-  const isSecureContext = isBrowser && window.location.protocol === 'https:';
-  const isInsecureBase = API_BASE.startsWith('http://');
-
-  const shouldUseRelativePath = !API_BASE || (isBrowser && isSecureContext && isInsecureBase);
-
-  if (!shouldUseRelativePath && API_BASE) {
+  // Langsung gunakan API_BASE jika ada. Jangan fallback ke /api karena tidak ada proxy.
+  if (API_BASE) {
     return `${API_BASE}${normalizedPath}`;
   }
 
@@ -22,6 +17,7 @@ const buildApiUrl = (path: string) => {
 };
 
 const fetcher = async (url: string) => {
+  console.log(`[Fetcher] Requesting: ${url}`);
   const res = await fetch(url, {
     headers: {
       'ngrok-skip-browser-warning': 'true',
