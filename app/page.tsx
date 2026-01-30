@@ -25,6 +25,10 @@ const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) {
     const text = await res.text();
+    // Deteksi jika respons adalah HTML (biasanya 404 Not Found atau 500 Error dari server web)
+    if (text.trim().startsWith('<')) {
+      throw new Error(`Backend tidak dapat dihubungi (${res.status}). Cek konfigurasi NEXT_PUBLIC_API_BASE_URL.`);
+    }
     try {
       const parsed = JSON.parse(text);
       throw new Error(parsed.error || text);
