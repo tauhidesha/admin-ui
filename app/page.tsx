@@ -22,7 +22,11 @@ const buildApiUrl = (path: string) => {
 };
 
 const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+    },
+  });
   if (!res.ok) {
     const text = await res.text();
     // Deteksi jika respons adalah HTML (biasanya 404 Not Found atau 500 Error dari server web)
@@ -422,7 +426,10 @@ export default function AdminConsole() {
 
       const res = await fetch(sendMessageUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(payload),
       });
 
@@ -504,7 +511,10 @@ export default function AdminConsole() {
 
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(payload),
       });
 
