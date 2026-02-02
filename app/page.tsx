@@ -1028,22 +1028,24 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
           background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-          background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
+          background: #0f172a; color: #f8fafc; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .modal-header h3 { margin: 0; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+        .close-btn:hover { color: white; }
         .info-row { margin-bottom: 8px; display: flex; }
-        .info-row label { font-weight: bold; width: 100px; color: #666; }
+        .info-row label { font-weight: bold; width: 100px; color: #94a3b8; }
         .form-group { margin-top: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group select, .form-group textarea {
-          width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+          width: 100%; padding: 8px; border: 1px solid #334155; border-radius: 4px;
+          background: #1e293b; color: white;
         }
         .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
         .modal-footer button {
-          padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;
+          padding: 8px 16px; border: 1px solid #334155; background: transparent; color: #e2e8f0; border-radius: 4px; cursor: pointer;
         }
         .modal-footer button.primary {
           background: #0070f3; color: white; border-color: #0070f3;
