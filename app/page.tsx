@@ -1101,17 +1101,17 @@ const _ = <style jsx global>{`
     display: flex; gap: 10px; margin-top: 10px;
   }
   .view-btn {
-    flex: 1; padding: 6px; border: 1px solid #ddd; background: #f5f5f5;
-    border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+    flex: 1; padding: 6px; border: 1px solid #334155; background: #1E293B;
+    border-radius: 4px; cursor: pointer; font-size: 0.9rem; color: #94A3B8;
   }
   .view-btn.active {
-    background: #0070f3; color: white; border-color: #0070f3;
+    background: #F4E603; color: #000000; border-color: #F4E603;
   }
-  .sidebar__info { padding: 15px; border-top: 1px solid #eee; margin-top: auto; }
+  .sidebar__info { padding: 15px; border-top: 1px solid #334155; margin-top: auto; color: #94A3B8; }
   .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-  .legend-item { display: flex; align-items: center; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; font-size: 0.8rem; color: #94A3B8; }
   .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; display: inline-block; }
-  .dot.pending { background: #f5a623; }
+  .dot.pending { background: #F4E603; }
   .dot.confirmed { background: #108ee9; }
   .dot.in_progress { background: #87d068; }
   .dot.completed { background: #00a854; }
