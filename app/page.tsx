@@ -107,6 +107,18 @@ interface NotificationItem {
   timestamp: string | null;
 }
 
+interface Booking {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  serviceName?: string;
+  services?: string[];
+  bookingDate: string;
+  bookingTime: string;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  adminNotes?: string;
+}
+
 function formatTimestamp(ts?: FirestoreTimestamp | string | null) {
   if (!ts) return '';
 
@@ -199,7 +211,10 @@ function getConversationDisplayName(conversation: ConversationLike | null | unde
   return conversation.senderNumber;
 }
 
+type ViewMode = 'chat' | 'calendar';
+
 export default function AdminConsole() {
+  const [viewMode, setViewMode] = useState<ViewMode>('chat');
   const [selectedNumber, setSelectedNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
@@ -229,6 +244,12 @@ export default function AdminConsole() {
     shouldFetchHistory ? buildApiUrl(`/conversation-history/${selectedNumber}`) : null,
     fetcher,
     { refreshInterval: 15000 }
+  );
+
+  // Fetch Bookings
+  const { data: bookingsData, mutate: mutateBookings } = useSWR<{ bookings: Booking[] }>(
+    viewMode === 'calendar' ? buildApiUrl('/bookings') : null,
+    fetcher
   );
 
   useEffect(() => {
@@ -572,6 +593,12 @@ export default function AdminConsole() {
     textarea.style.height = `${nextHeight}px`;
   }, [message]);
 
+  // Calendar State
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isUpdatingBooking, setIsUpdatingBooking] = useState(false);
+  const [bookingNote, setBookingNote] = useState('');
+
   return (
     <main
       className={`console ${
@@ -597,10 +624,42 @@ export default function AdminConsole() {
         </div>
       )}
 
+      {/* Booking Modal */}
+      {selectedBooking && (
+        <BookingModal 
+          booking={selectedBooking} 
+          onClose={() => setSelectedBooking(null)}
+          onUpdate={async (id, status, notes) => {
+            setIsUpdatingBooking(true);
+            try {
+              await updateBookingStatus(id, status, notes);
+              await mutateBookings();
+              setSelectedBooking(null);
+            } finally {
+              setIsUpdatingBooking(false);
+            }
+          }}
+          isUpdating={isUpdatingBooking}
+        />
+      )}
+
       <aside className="sidebar">
         <div className="sidebar__header">
           <h1>Bosmat Admin Console</h1>
-          <p>Kelola percakapan WhatsApp secara langsung.</p>
+          <div className="view-switcher">
+            <button 
+              className={`view-btn ${viewMode === 'chat' ? 'active' : ''}`}
+              onClick={() => setViewMode('chat')}
+            >
+              Chat
+            </button>
+            <button 
+              className={`view-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+              onClick={() => setViewMode('calendar')}
+            >
+              Agenda
+            </button>
+          </div>
         </div>
 
         <label htmlFor="search" className="visually-hidden">
@@ -613,21 +672,41 @@ export default function AdminConsole() {
           onChange={(event) => setSearchTerm(event.target.value)}
         />
 
-        {listError && <div className="notice">Gagal memuat daftar percakapan. {listError.message}</div>}
-
-        <div className="conversation-list">
-          {isLoadingList && !filteredConversations.length ? (
-            <p className="muted">Memuat percakapan...</p>
-          ) : filteredConversations.length ? (
-            filteredConversations.map(renderConversationItem)
-          ) : (
-            <p className="muted">Belum ada percakapan yang tersimpan.</p>
-          )}
-        </div>
+        {viewMode === 'chat' ? (
+          <>
+            {listError && <div className="notice">Gagal memuat daftar percakapan. {listError.message}</div>}
+            <div className="conversation-list">
+              {isLoadingList && !filteredConversations.length ? (
+                <p className="muted">Memuat percakapan...</p>
+              ) : filteredConversations.length ? (
+                filteredConversations.map(renderConversationItem)
+              ) : (
+                <p className="muted">Belum ada percakapan yang tersimpan.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="sidebar__info">
+            <p className="muted">Pilih tanggal di kalender untuk melihat detail booking.</p>
+            <div className="legend">
+              <div className="legend-item"><span className="dot pending"></span> Pending</div>
+              <div className="legend-item"><span className="dot confirmed"></span> Confirmed</div>
+              <div className="legend-item"><span className="dot in_progress"></span> In Progress</div>
+              <div className="legend-item"><span className="dot completed"></span> Completed</div>
+            </div>
+          </div>
+        )}
       </aside>
 
       <section className="content">
-        {activeConversation ? (
+        {viewMode === 'calendar' ? (
+          <CalendarView 
+            currentDate={currentDate}
+            onDateChange={setCurrentDate}
+            bookings={bookingsData?.bookings || []}
+            onSelectBooking={setSelectedBooking}
+          />
+        ) : activeConversation ? (
           <>
             <header className="content__header">
               <div className="content__header-info">
@@ -767,3 +846,234 @@ export default function AdminConsole() {
     </main>
   );
 }
+
+// --- Calendar Components & Helpers ---
+
+async function updateBookingStatus(id: string, status: string, notes: string) {
+  const url = buildApiUrl(`/bookings/${id}/status`);
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+    body: JSON.stringify({ status, notes }),
+  });
+  if (!res.ok) throw new Error('Failed to update booking');
+  return res.json();
+}
+
+function CalendarView({ 
+  currentDate, 
+  onDateChange, 
+  bookings, 
+  onSelectBooking 
+}: { 
+  currentDate: Date; 
+  onDateChange: (d: Date) => void; 
+  bookings: Booking[];
+  onSelectBooking: (b: Booking) => void;
+}) {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
+  
+  const days = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(new Date(year, month, i));
+  }
+
+  const monthName = currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+  const handlePrevMonth = () => onDateChange(new Date(year, month - 1, 1));
+  const handleNextMonth = () => onDateChange(new Date(year, month + 1, 1));
+
+  const getBookingsForDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return bookings.filter(b => b.bookingDate === dateStr);
+  };
+
+  return (
+    <div className="calendar-container">
+      <div className="calendar-header">
+        <button onClick={handlePrevMonth}>&lt;</button>
+        <h2>{monthName}</h2>
+        <button onClick={handleNextMonth}>&gt;</button>
+      </div>
+      <div className="calendar-grid">
+        {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(d => (
+          <div key={d} className="calendar-day-header">{d}</div>
+        ))}
+        {days.map((date, idx) => {
+          if (!date) return <div key={idx} className="calendar-day empty"></div>;
+          
+          const dayBookings = getBookingsForDate(date);
+          const isToday = new Date().toDateString() === date.toDateString();
+
+          return (
+            <div key={idx} className={`calendar-day ${isToday ? 'today' : ''}`}>
+              <span className="day-number">{date.getDate()}</span>
+              <div className="day-events">
+                {dayBookings.map(b => (
+                  <button 
+                    key={b.id} 
+                    className={`event-pill status-${b.status}`}
+                    onClick={() => onSelectBooking(b)}
+                    title={`${b.customerName} - ${b.serviceName || 'Layanan'}`}
+                  >
+                    {b.bookingTime} {b.customerName.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <style jsx>{`
+        .calendar-container { padding: 20px; height: 100%; display: flex; flex-direction: column; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-header h2 { margin: 0; font-size: 1.5rem; }
+        .calendar-header button { background: none; border: 1px solid #ddd; padding: 5px 15px; cursor: pointer; border-radius: 4px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; flex: 1; }
+        .calendar-day-header { text-align: center; font-weight: bold; color: #666; padding-bottom: 10px; }
+        .calendar-day { border: 1px solid #eee; border-radius: 8px; padding: 8px; min-height: 100px; background: #fff; }
+        .calendar-day.empty { background: transparent; border: none; }
+        .calendar-day.today { border-color: #0070f3; background: #f0f7ff; }
+        .day-number { font-weight: bold; font-size: 0.9rem; color: #333; display: block; margin-bottom: 5px; }
+        .day-events { display: flex; flex-direction: column; gap: 4px; }
+        .event-pill { 
+          border: none; text-align: left; font-size: 0.75rem; padding: 4px 6px; 
+          border-radius: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+          color: #fff; width: 100%;
+        }
+        .status-pending { background-color: #f5a623; }
+        .status-confirmed { background-color: #108ee9; }
+        .status-in_progress { background-color: #87d068; }
+        .status-completed { background-color: #00a854; }
+        .status-cancelled { background-color: #f50; }
+      `}</style>
+    </div>
+  );
+}
+
+function BookingModal({ booking, onClose, onUpdate, isUpdating }: { 
+  booking: Booking; 
+  onClose: () => void; 
+  onUpdate: (id: string, status: string, notes: string) => void;
+  isUpdating: boolean;
+}) {
+  const [status, setStatus] = useState(booking.status);
+  const [notes, setNotes] = useState(booking.adminNotes || '');
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h3>Detail Booking</h3>
+          <button onClick={onClose} className="close-btn">×</button>
+        </div>
+        <div className="modal-body">
+          <div className="info-row">
+            <label>Pelanggan:</label>
+            <span>{booking.customerName} ({booking.customerPhone})</span>
+          </div>
+          <div className="info-row">
+            <label>Waktu:</label>
+            <span>{booking.bookingDate} jam {booking.bookingTime}</span>
+          </div>
+          <div className="info-row">
+            <label>Layanan:</label>
+            <span>{booking.services?.join(', ') || booking.serviceName}</span>
+          </div>
+          
+          <hr />
+          
+          <div className="form-group">
+            <label>Update Status:</label>
+            <select value={status} onChange={(e) => setStatus(e.target.value as any)}>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Catatan Admin:</label>
+            <textarea 
+              value={notes} 
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Catatan progres pengerjaan..."
+              rows={3}
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button onClick={onClose} disabled={isUpdating}>Batal</button>
+          <button 
+            className="primary" 
+            onClick={() => onUpdate(booking.id, status, notes)}
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
+          </button>
+        </div>
+      </div>
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+          background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h3 { margin: 0; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .info-row { margin-bottom: 8px; display: flex; }
+        .info-row label { font-weight: bold; width: 100px; color: #666; }
+        .form-group { margin-top: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group select, .form-group textarea {
+          width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+        }
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-footer button {
+          padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;
+        }
+        .modal-footer button.primary {
+          background: #0070f3; color: white; border-color: #0070f3;
+        }
+        .modal-footer button:disabled { opacity: 0.7; cursor: not-allowed; }
+      `}</style>
+    </div>
+  );
+}
+
+/* Additional Global Styles for Sidebar Switcher */
+/* Note: In a real Next.js app, these should be in globals.css or a module */
+/* Adding style tag here for simplicity in single-file edit */
+const _ = <style jsx global>{`
+  .view-switcher {
+    display: flex; gap: 10px; margin-top: 10px;
+  }
+  .view-btn {
+    flex: 1; padding: 6px; border: 1px solid #ddd; background: #f5f5f5;
+    border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+  }
+  .view-btn.active {
+    background: #0070f3; color: white; border-color: #0070f3;
+  }
+  .sidebar__info { padding: 15px; border-top: 1px solid #eee; margin-top: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; font-size: 0.8rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; display: inline-block; }
+  .dot.pending { background: #f5a623; }
+  .dot.confirmed { background: #108ee9; }
+  .dot.in_progress { background: #87d068; }
+  .dot.completed { background: #00a854; }
+`}</style>;
