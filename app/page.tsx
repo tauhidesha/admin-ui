@@ -117,6 +117,9 @@ interface Booking {
   bookingTime: string;
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
   adminNotes?: string;
+  isRepaint?: boolean;
+  estimatedDurationDays?: number;
+  estimatedEndDate?: string;
 }
 
 function formatTimestamp(ts?: FirestoreTimestamp | string | null) {
@@ -895,6 +898,16 @@ function CalendarView({
     return bookings.filter(b => b.bookingDate === dateStr);
   };
 
+  const getRepaintOccupancy = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    // Hitung booking repaint yang aktif pada tanggal ini
+    const active = bookings.filter(b => {
+      if (!b.isRepaint || b.status === 'cancelled' || b.status === 'completed') return false;
+      return b.bookingDate <= dateStr && (b.estimatedEndDate || b.bookingDate) >= dateStr;
+    });
+    return active.length;
+  };
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -911,10 +924,19 @@ function CalendarView({
           
           const dayBookings = getBookingsForDate(date);
           const isToday = new Date().toDateString() === date.toDateString();
+          const repaintCount = getRepaintOccupancy(date);
+          const isFull = repaintCount >= 2;
 
           return (
             <div key={idx} className={`calendar-day ${isToday ? 'today' : ''}`}>
-              <span className="day-number">{date.getDate()}</span>
+              <div className="day-header">
+                <span className="day-number">{date.getDate()}</span>
+                {repaintCount > 0 && (
+                  <span className={`capacity-badge ${isFull ? 'full' : 'partial'}`} title="Slot Repaint Terpakai">
+                    🎨 {repaintCount}/2
+                  </span>
+                )}
+              </div>
               <div className="day-events">
                 {dayBookings.map(b => (
                   <button 
@@ -941,7 +963,14 @@ function CalendarView({
         .calendar-day { border: 1px solid #eee; border-radius: 8px; padding: 8px; min-height: 100px; background: #fff; }
         .calendar-day.empty { background: transparent; border: none; }
         .calendar-day.today { border-color: #0070f3; background: #f0f7ff; }
-        .day-number { font-weight: bold; font-size: 0.9rem; color: #333; display: block; margin-bottom: 5px; }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .day-number { font-weight: bold; font-size: 0.9rem; color: #333; }
+        .capacity-badge { 
+          font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; color: white;
+        }
+        .capacity-badge.full { background-color: #e11d48; } /* Red */
+        .capacity-badge.partial { background-color: #f59e0b; } /* Amber */
+        
         .day-events { display: flex; flex-direction: column; gap: 4px; }
         .event-pill { 
           border: none; text-align: left; font-size: 0.75rem; padding: 4px 6px; 
@@ -987,6 +1016,14 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
             <label>Layanan:</label>
             <span>{booking.services?.join(', ') || booking.serviceName}</span>
           </div>
+          {booking.estimatedEndDate && (
+            <div className="info-row">
+              <label>Estimasi:</label>
+              <span style={{ color: '#fbbf24' }}>
+                {booking.estimatedDurationDays} hari (Selesai: {booking.estimatedEndDate})
+              </span>
+            </div>
+          )}
           
           <hr />
           
