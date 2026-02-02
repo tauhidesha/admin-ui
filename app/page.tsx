@@ -1097,22 +1097,108 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
 /* Note: In a real Next.js app, these should be in globals.css or a module */
 /* Adding style tag here for simplicity in single-file edit */
 const _ = <style jsx global>{`
+  :root {
+    --bg-main: #0F172A;
+    --bg-card: #1E293B;
+    --border-color: #334155;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --primary: #F4E603;
+    --text-on-primary: #000000;
+  }
+
+  body { background-color: var(--bg-main); color: var(--text-main); }
+  
+  /* Layout Overrides */
+  .console { background-color: var(--bg-main); }
+  .sidebar { background-color: var(--bg-card); border-right: 1px solid var(--border-color); }
+  .sidebar__header h1 { color: var(--text-main); }
+  
+  input#search {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+
+  /* Conversation List */
+  .conversation-item { border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+  .conversation-item:hover { background-color: rgba(255,255,255,0.05); }
+  .conversation-item.active {
+    background-color: rgba(244, 230, 3, 0.1);
+    border-left: 4px solid var(--primary);
+  }
+  .conversation-item__name { color: var(--text-main); }
+  .conversation-item__time, .conversation-item__subtitle { color: var(--text-muted); }
+
+  /* Content Area */
+  .content { background-color: var(--bg-main); }
+  .content__header { border-bottom: 1px solid var(--border-color); background-color: var(--bg-card); }
+  .content__header h2 { color: var(--text-main); }
+
+  /* Chat Panel */
+  .chat-panel { background-color: var(--bg-main); }
+  .message-item { color: var(--text-main); }
+  .message-item.user { background-color: var(--bg-card); border: 1px solid var(--border-color); }
+  .message-item.ai {
+    background-color: rgba(244, 230, 3, 0.1);
+    border: 1px solid rgba(244, 230, 3, 0.3);
+  }
+  .message-item.admin {
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .message-item__sender, .message-item__time { color: var(--text-muted); }
+
+  /* Composer */
+  .composer { border-top: 1px solid var(--border-color); background-color: var(--bg-card); }
+  .composer textarea {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+  .composer__actions button {
+    background-color: var(--primary);
+    color: var(--text-on-primary);
+    border: none;
+    font-weight: bold;
+  }
+  .composer__actions button:disabled {
+    background-color: var(--border-color);
+    color: var(--text-muted);
+  }
+
+  /* View Switcher */
   .view-switcher {
     display: flex; gap: 10px; margin-top: 10px;
   }
   .view-btn {
-    flex: 1; padding: 6px; border: 1px solid #334155; background: #1E293B;
-    border-radius: 4px; cursor: pointer; font-size: 0.9rem; color: #94A3B8;
+    flex: 1; padding: 6px; border: 1px solid var(--border-color); background: var(--bg-main);
+    border-radius: 4px; cursor: pointer; font-size: 0.9rem; color: var(--text-muted);
   }
   .view-btn.active {
-    background: #F4E603; color: #000000; border-color: #F4E603;
+    background: var(--primary); color: var(--text-on-primary); border-color: var(--primary);
   }
-  .sidebar__info { padding: 15px; border-top: 1px solid #334155; margin-top: auto; color: #94A3B8; }
+  
+  .sidebar__info { padding: 15px; border-top: 1px solid var(--border-color); margin-top: auto; color: var(--text-muted); }
   .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-  .legend-item { display: flex; align-items: center; font-size: 0.8rem; color: #94A3B8; }
+  .legend-item { display: flex; align-items: center; font-size: 0.8rem; color: var(--text-muted); }
   .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; display: inline-block; }
-  .dot.pending { background: #F4E603; }
+  .dot.pending { background: var(--primary); }
   .dot.confirmed { background: #108ee9; }
   .dot.in_progress { background: #87d068; }
   .dot.completed { background: #00a854; }
+
+  /* Misc */
+  .toggle-button {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+  .badge { background-color: var(--border-color); color: var(--text-main); }
+  
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-main); }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
 `}</style>;
