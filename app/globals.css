@@ -61,16 +61,16 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  border-color: #FFEA00;
+  box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.25);
 }
 
 button {
-  background: #f7931e;
+  background: #FFEA00;
   border: none;
   padding: 0.75rem 1.6rem;
   border-radius: 12px;
-  color: #111827;
+  color: #000000;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -78,7 +78,7 @@ button {
 }
 
 button:hover {
-  background: #df7f13;
+  background: #d4d400;
   transform: translateY(-1px);
 }
 
@@ -89,8 +89,8 @@ button:disabled {
 }
 
 .badge {
-  background: rgba(59, 130, 246, 0.12);
-  color: #8fb6ff;
+  background: rgba(255, 234, 0, 0.12);
+  color: #FFEA00;
   border-radius: 999px;
   padding: 0.3rem 0.75rem;
   font-size: 0.72rem;
@@ -105,9 +105,9 @@ button:disabled {
   margin-top: 0.75rem;
   padding: 1rem;
   border-radius: 12px;
-  background: rgba(255, 196, 135, 0.08);
-  border: 1px solid rgba(255, 196, 135, 0.25);
-  color: #f8d4a0;
+  background: rgba(255, 234, 0, 0.08);
+  border: 1px solid rgba(255, 234, 0, 0.25);
+  color: #FFEA00;
   font-size: 0.9rem;
 }
 
@@ -126,8 +126,8 @@ button:disabled {
 }
 
 .pill-warning {
-  background: rgba(248, 187, 89, 0.2);
-  color: #fbd38d;
+  background: rgba(255, 234, 0, 0.2);
+  color: #FFEA00;
 }
 
 .pill-success {
@@ -187,10 +187,30 @@ button:disabled {
   min-height: 0;
 }
 
+/* Updated logo styles */
+.sidebar__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar__logo {
+  max-width: 100%;
+  height: auto;
+  max-height: 60px;
+  /* Adjust as needed */
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+/* Replaced h1 with logo image in page.tsx, so h1 styles might be unused but safe to keep or remove */
 .sidebar__header h1 {
   margin: 0;
   font-size: 1.35rem;
   color: #f3f6ff;
+  display: none;
+  /* Hide if still present */
 }
 
 .sidebar__header p {
@@ -221,17 +241,17 @@ button:disabled {
 
 .conversation-item:hover {
   background: rgba(35, 52, 85, 0.82);
-  border-color: rgba(76, 129, 255, 0.35);
+  border-color: rgba(255, 234, 0, 0.35);
   transform: translateY(-2px);
 }
 
 .conversation-item.active {
-  background: rgba(59, 130, 246, 0.22);
-  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(255, 234, 0, 0.15);
+  border-color: rgba(255, 234, 0, 0.55);
 }
 
 .conversation-item.new-message {
-  box-shadow: 0 0 0 2px rgba(255, 200, 109, 0.55);
+  box-shadow: 0 0 0 2px rgba(255, 234, 0, 0.55);
 }
 
 .conversation-item__header {
@@ -328,7 +348,7 @@ button:disabled {
 }
 
 .content__header-actions--mobile .toggle-button--back {
-    flex: 0 0 auto;
+  flex: 0 0 auto;
 }
 
 .toggle-button--mobile {
@@ -387,14 +407,14 @@ button:disabled {
 
 .message-item.user {
   align-self: flex-end;
-  background: #f7931e;
-  color: #111827;
-  border: 1px solid rgba(247, 147, 30, 0.55);
+  background: #FFEA00;
+  color: #000000;
+  border: 1px solid rgba(255, 234, 0, 0.55);
   border-radius: 18px 18px 4px 18px;
 }
 
 .message-item.user .message-item__meta {
-  color: rgba(17, 24, 39, 0.72);
+  color: rgba(0, 0, 0, 0.65);
 }
 
 .message-item.ai {
@@ -693,9 +713,9 @@ button:disabled {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f7931e;
-    color: #111827;
-    box-shadow: 0 6px 16px rgba(247, 147, 30, 0.45);
+    background: #FFEA00;
+    color: #000000;
+    box-shadow: 0 6px 16px rgba(255, 234, 0, 0.45);
   }
 
   .notification-stack {

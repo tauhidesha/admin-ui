@@ -450,7 +450,7 @@ export default function AdminConsole() {
 
       const res = await fetch(sendMessageUrl, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
@@ -535,7 +535,7 @@ export default function AdminConsole() {
 
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': 'true',
         },
@@ -567,8 +567,8 @@ export default function AdminConsole() {
   const toggleButtonLabel = isTogglingAi
     ? 'Memproses...'
     : aiPaused
-    ? 'Aktifkan AI'
-    : 'Matikan AI';
+      ? 'Aktifkan AI'
+      : 'Matikan AI';
 
   const toggleButtonClassName = aiPaused
     ? 'toggle-button toggle-button--resume'
@@ -604,9 +604,8 @@ export default function AdminConsole() {
 
   return (
     <main
-      className={`console ${
-        isMobile ? (showMobileContent ? 'console--mobile-content' : 'console--mobile-list') : ''
-      }`}
+      className={`console ${isMobile ? (showMobileContent ? 'console--mobile-content' : 'console--mobile-list') : ''
+        }`}
     >
       {notifications.length > 0 && (
         <div className="notification-stack">
@@ -629,8 +628,8 @@ export default function AdminConsole() {
 
       {/* Booking Modal */}
       {selectedBooking && (
-        <BookingModal 
-          booking={selectedBooking} 
+        <BookingModal
+          booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onUpdate={async (id, status, notes) => {
             setIsUpdatingBooking(true);
@@ -648,15 +647,25 @@ export default function AdminConsole() {
 
       <aside className="sidebar">
         <div className="sidebar__header">
-          <h1>Bosmat Admin Console</h1>
+          <img
+            src="/logo.png"
+            alt="Bosmat Studio"
+            className="sidebar__logo"
+            onError={(e) => {
+              // Fallback if image fails
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement?.querySelector('h1')?.style.setProperty('display', 'block');
+            }}
+          />
+          <h1 style={{ display: 'none' }}>Bosmat Admin Console</h1>
           <div className="view-switcher">
-            <button 
+            <button
               className={`view-btn ${viewMode === 'chat' ? 'active' : ''}`}
               onClick={() => setViewMode('chat')}
             >
               Chat
             </button>
-            <button 
+            <button
               className={`view-btn ${viewMode === 'calendar' ? 'active' : ''}`}
               onClick={() => setViewMode('calendar')}
             >
@@ -703,7 +712,7 @@ export default function AdminConsole() {
 
       <section className="content">
         {viewMode === 'calendar' ? (
-          <CalendarView 
+          <CalendarView
             currentDate={currentDate}
             onDateChange={setCurrentDate}
             bookings={bookingsData?.bookings || []}
@@ -733,9 +742,8 @@ export default function AdminConsole() {
                 </div>
               </div>
               <div
-                className={`content__header-actions ${
-                  isMobile ? 'content__header-actions--mobile' : ''
-                }`}
+                className={`content__header-actions ${isMobile ? 'content__header-actions--mobile' : ''
+                  }`}
               >
                 {isMobile ? (
                   <>
@@ -863,23 +871,23 @@ async function updateBookingStatus(id: string, status: string, notes: string) {
   return res.json();
 }
 
-function CalendarView({ 
-  currentDate, 
-  onDateChange, 
-  bookings, 
-  onSelectBooking 
-}: { 
-  currentDate: Date; 
-  onDateChange: (d: Date) => void; 
+function CalendarView({
+  currentDate,
+  onDateChange,
+  bookings,
+  onSelectBooking
+}: {
+  currentDate: Date;
+  onDateChange: (d: Date) => void;
   bookings: Booking[];
   onSelectBooking: (b: Booking) => void;
 }) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
-  
+
   const days = [];
   for (let i = 0; i < firstDayOfMonth; i++) {
     days.push(null);
@@ -921,7 +929,7 @@ function CalendarView({
         ))}
         {days.map((date, idx) => {
           if (!date) return <div key={idx} className="calendar-day empty"></div>;
-          
+
           const dayBookings = getBookingsForDate(date);
           const isToday = new Date().toDateString() === date.toDateString();
           const repaintCount = getRepaintOccupancy(date);
@@ -939,8 +947,8 @@ function CalendarView({
               </div>
               <div className="day-events">
                 {dayBookings.map(b => (
-                  <button 
-                    key={b.id} 
+                  <button
+                    key={b.id}
                     className={`event-pill status-${b.status}`}
                     onClick={() => onSelectBooking(b)}
                     title={`${b.customerName} - ${b.serviceName || 'Layanan'}`}
@@ -987,9 +995,9 @@ function CalendarView({
   );
 }
 
-function BookingModal({ booking, onClose, onUpdate, isUpdating }: { 
-  booking: Booking; 
-  onClose: () => void; 
+function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
+  booking: Booking;
+  onClose: () => void;
   onUpdate: (id: string, status: string, notes: string) => void;
   isUpdating: boolean;
 }) {
@@ -1024,9 +1032,9 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
               </span>
             </div>
           )}
-          
+
           <hr />
-          
+
           <div className="form-group">
             <label>Update Status:</label>
             <select value={status} onChange={(e) => setStatus(e.target.value as any)}>
@@ -1040,8 +1048,8 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
 
           <div className="form-group">
             <label>Catatan Admin:</label>
-            <textarea 
-              value={notes} 
+            <textarea
+              value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Catatan progres pengerjaan..."
               rows={3}
@@ -1050,8 +1058,8 @@ function BookingModal({ booking, onClose, onUpdate, isUpdating }: {
         </div>
         <div className="modal-footer">
           <button onClick={onClose} disabled={isUpdating}>Batal</button>
-          <button 
-            className="primary" 
+          <button
+            className="primary"
             onClick={() => onUpdate(booking.id, status, notes)}
             disabled={isUpdating}
           >
