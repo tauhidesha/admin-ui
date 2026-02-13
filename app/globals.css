@@ -1,17 +1,23 @@
 :root {
-  --bg-deep: #09090b;
-  --bg-surface: #111113;
-  --bg-subtle: #18181b;
-  --border-dim: #1f1f22;
-  --border-highlight: #27272a;
-  --text-main: #fafafa;
-  --text-muted: #71717a;
-  --text-dim: #52525b;
+  --bg-deep: #f4f4f5;
+  /* Zinc-100 */
+  --bg-surface: #ffffff;
+  --bg-subtle: #fafafa;
+  --border-dim: #e4e4e7;
+  /* Zinc-200 */
+  --border-highlight: #d4d4d8;
+  /* Zinc-300 */
+  --text-main: #18181b;
+  /* Zinc-950 */
+  --text-muted: #52525b;
+  /* Zinc-600 */
+  --text-dim: #a1a1aa;
+  /* Zinc-400 */
   --accent-yellow: #FFEA00;
   --accent-yellow-hover: #facc15;
-  --accent-yellow-glow: rgba(255, 234, 0, 0.15);
+  --accent-yellow-glow: rgba(255, 234, 0, 0.4);
 
-  color-scheme: dark;
+  color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg-deep);
   color: var(--text-main);
@@ -57,14 +63,14 @@ main {
   border-radius: 24px;
   padding: 1.75rem;
   border: 1px solid var(--border-dim);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
 
 .sidebar__header {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 0.5rem;
 }
 
@@ -75,12 +81,13 @@ main {
   width: 100%;
   display: flex;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-dim);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .sidebar__logo {
   max-width: 100%;
-  max-height: 44px;
+  max-height: 48px;
   object-fit: contain;
 }
 
@@ -92,7 +99,7 @@ main {
   margin: 0;
   color: var(--text-muted);
   font-size: 0.85rem;
-  letter-spacing: 0.01em;
+  font-weight: 500;
 }
 
 /* View Switcher */
@@ -102,7 +109,6 @@ main {
   background: var(--bg-deep);
   padding: 4px;
   border-radius: 14px;
-  border: 1px solid var(--border-dim);
 }
 
 .view-btn {
@@ -118,9 +124,10 @@ main {
 }
 
 .view-btn.active {
-  background: var(--bg-subtle);
-  color: var(--accent-yellow);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: var(--bg-surface);
+  color: #c4a000;
+  /* Darker yellow for text visibility on white */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 /* Forms & Inputs */
@@ -131,7 +138,7 @@ select {
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1px solid var(--border-highlight);
-  background: var(--bg-deep);
+  background: var(--bg-surface);
   color: var(--text-main);
   font-family: inherit;
   font-size: 0.95rem;
@@ -152,19 +159,20 @@ textarea::placeholder {
 /* Buttons */
 button:not(.view-btn):not(.conversation-item) {
   background: var(--accent-yellow);
-  border: none;
+  border: 1px solid #d4d400;
   padding: 0.75rem 1.5rem;
   border-radius: 14px;
   color: #000000;
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 button:not(.view-btn):not(.conversation-item):hover {
   background: var(--accent-yellow-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px var(--accent-yellow-glow);
+  box-shadow: 0 4px 12px var(--accent-yellow-glow);
 }
 
 /* Conversation List */
@@ -184,23 +192,23 @@ button:not(.view-btn):not(.conversation-item):hover {
   gap: 0.5rem;
   padding: 1.15rem;
   border-radius: 20px;
-  background: var(--bg-subtle);
-  border: 1px solid transparent;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dim);
   cursor: pointer;
 }
 
 .conversation-item:hover {
-  background: #27272a;
+  background: var(--bg-subtle);
   border-color: var(--border-highlight);
 }
 
 .conversation-item.active {
-  background: rgba(255, 234, 0, 0.04);
-  border-color: rgba(255, 234, 0, 0.2);
+  background: rgba(255, 234, 0, 0.08);
+  border-color: rgba(255, 234, 0, 0.3);
 }
 
 .conversation-item.new-message {
-  border-left: 3px solid var(--accent-yellow);
+  box-shadow: 0 0 0 2px var(--accent-yellow);
 }
 
 .conversation-item__name {
@@ -209,9 +217,9 @@ button:not(.view-btn):not(.conversation-item):hover {
   font-size: 1rem;
 }
 
-.conversation-item__time {
+.conversation-list .conversation-item__time {
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--text-muted);
 }
 
 .conversation-item__subtitle {
@@ -232,7 +240,7 @@ button:not(.view-btn):not(.conversation-item):hover {
   border-radius: 24px;
   padding: 2rem;
   border: 1px solid var(--border-dim);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   min-height: 0;
 }
 
@@ -253,7 +261,7 @@ button:not(.view-btn):not(.conversation-item):hover {
 
 /* Chat Panel */
 .chat-panel {
-  background: var(--bg-deep);
+  background: #ffffff;
   border-radius: 20px;
   border: 1px solid var(--border-dim);
   padding: 1.5rem;
@@ -280,6 +288,7 @@ button:not(.view-btn):not(.conversation-item):hover {
   line-height: 1.6;
   max-width: 80%;
   border-radius: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .message-item.user {
@@ -288,18 +297,21 @@ button:not(.view-btn):not(.conversation-item):hover {
   color: #000000;
   border-bottom-right-radius: 4px;
   font-weight: 500;
+  border: 1px solid #d4d400;
 }
 
 .message-item.ai {
   align-self: flex-start;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-highlight);
+  background: #f4f4f5;
+  color: var(--text-main);
+  border: 1px solid var(--border-dim);
   border-bottom-left-radius: 4px;
 }
 
 .message-item.admin {
   align-self: flex-start;
-  background: var(--bg-subtle);
+  background: #ffffff;
+  border: 1px solid var(--border-dim);
   border-left: 4px solid var(--accent-yellow);
   border-bottom-left-radius: 4px;
 }
@@ -307,14 +319,14 @@ button:not(.view-btn):not(.conversation-item):hover {
 .message-item__sender {
   font-weight: 700;
   font-size: 0.75rem;
-  opacity: 0.7;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: var(--text-muted);
 }
 
 .message-item__time {
   font-size: 0.7rem;
-  opacity: 0.5;
+  color: var(--text-dim);
 }
 
 /* Composer */
@@ -331,12 +343,13 @@ button:not(.view-btn):not(.conversation-item):hover {
 }
 
 .composer textarea {
-  background: var(--bg-subtle);
+  background: #f4f4f5;
   border-radius: 18px;
   padding: 0.9rem 1.2rem;
   min-height: 52px;
   max-height: 200px;
   resize: none;
+  border-color: var(--border-dim);
 }
 
 .send-btn {
@@ -354,16 +367,20 @@ button:not(.view-btn):not(.conversation-item):hover {
   padding: 0.25rem 0.75rem;
   font-size: 0.7rem;
   border: 1px solid var(--border-highlight);
+  border-radius: 999px;
+  font-weight: 600;
 }
 
 .pill-warning {
-  color: var(--accent-yellow);
-  border-color: rgba(255, 234, 0, 0.3);
+  background: rgba(255, 234, 0, 0.1);
+  color: #856404;
+  border-color: rgba(255, 234, 0, 0.5);
 }
 
 .pill-success {
-  color: #4ade80;
-  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(34, 197, 94, 0.1);
+  color: #155724;
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 /* Scrollbar */
