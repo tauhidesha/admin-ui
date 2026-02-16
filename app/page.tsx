@@ -269,7 +269,7 @@ export default function AdminConsole() {
 
   useEffect(() => {
     const updateViewport = () => {
-      const mobile = typeof window !== 'undefined' && window.innerWidth <= 900;
+      const mobile = typeof window !== 'undefined' && window.innerWidth <= 768;
       setIsMobile(mobile);
       if (!mobile) {
         setShowMobileContent(true);
@@ -603,10 +603,7 @@ export default function AdminConsole() {
   const [bookingNote, setBookingNote] = useState('');
 
   return (
-    <main
-      className={`console ${isMobile ? (showMobileContent ? 'console--mobile-content' : 'console--mobile-list') : ''
-        }`}
-    >
+    <main className="console">
       {notifications.length > 0 && (
         <div className="notification-stack">
           {notifications.map((item) => (
@@ -645,215 +642,219 @@ export default function AdminConsole() {
         />
       )}
 
-      <aside className="sidebar">
-        <div className="sidebar__header">
-          <img
-            src="/logo.png"
-            alt="Bosmat Studio"
-            className="sidebar__logo"
-            onError={(e) => {
-              // Fallback if image fails
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement?.querySelector('h1')?.style.setProperty('display', 'block');
-            }}
-          />
-          <h1 style={{ display: 'none' }}>Bosmat Admin Console</h1>
-          <div className="view-switcher">
-            <button
-              className={`view-btn ${viewMode === 'chat' ? 'active' : ''}`}
-              onClick={() => setViewMode('chat')}
-            >
-              Chat
-            </button>
-            <button
-              className={`view-btn ${viewMode === 'calendar' ? 'active' : ''}`}
-              onClick={() => setViewMode('calendar')}
-            >
-              Agenda
-            </button>
-          </div>
-        </div>
-
-        <label htmlFor="search" className="visually-hidden">
-          Cari pelanggan
-        </label>
-        <input
-          id="search"
-          placeholder="Cari nama, nomor, atau pesan..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
-
-        {viewMode === 'chat' ? (
-          <>
-            {listError && <div className="notice">Gagal memuat daftar percakapan. {listError.message}</div>}
-            <div className="conversation-list">
-              {isLoadingList && !filteredConversations.length ? (
-                <p className="muted">Memuat percakapan...</p>
-              ) : filteredConversations.length ? (
-                filteredConversations.map(renderConversationItem)
-              ) : (
-                <p className="muted">Belum ada percakapan yang tersimpan.</p>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="sidebar__info">
-            <p className="muted">Pilih tanggal di kalender untuk melihat detail booking.</p>
-            <div className="legend">
-              <div className="legend-item"><span className="dot pending"></span> Pending</div>
-              <div className="legend-item"><span className="dot confirmed"></span> Confirmed</div>
-              <div className="legend-item"><span className="dot in_progress"></span> In Progress</div>
-              <div className="legend-item"><span className="dot completed"></span> Completed</div>
-            </div>
-          </div>
-        )}
-      </aside>
-
-      <section className="content">
-        {viewMode === 'calendar' ? (
-          <CalendarView
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-            bookings={bookingsData?.bookings || []}
-            onSelectBooking={setSelectedBooking}
-          />
-        ) : activeConversation ? (
-          <>
-            <header className="content__header">
-              <div className="content__header-info">
-                <h2>{getConversationDisplayName(activeConversation)}</h2>
-                <div className="content__header-meta">
-                  <span className="muted" title={activeConversation.senderNumber}>
-                    {activeConversation.platformId || activeConversation.senderNumber}
-                  </span>
-                  <span
-                    className={`pill pill-channel ${activeChannelMeta.pillClass}`}
-                    title={activeChannelMeta.label}
-                  >
-                    {activeChannelMeta.tag}
-                  </span>
-                </div>
-                <div className="ai-status">
-                  <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
-                    {aiPaused ? 'AI OFF' : 'AI ON'}
-                  </span>
-                  <span className="muted ai-status__description">{aiStatusDescription}</span>
-                </div>
-              </div>
-              <div
-                className={`content__header-actions ${isMobile ? 'content__header-actions--mobile' : ''
-                  }`}
+      {(!isMobile || !showMobileContent) && (
+        <aside className="sidebar">
+          <div className="sidebar__header">
+            <img
+              src="/logo.png"
+              alt="Bosmat Studio"
+              className="sidebar__logo"
+              onError={(e) => {
+                // Fallback if image fails
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement?.querySelector('h1')?.style.setProperty('display', 'block');
+              }}
+            />
+            <h1 style={{ display: 'none' }}>Bosmat Admin Console</h1>
+            <div className="view-switcher">
+              <button
+                className={`view-btn ${viewMode === 'chat' ? 'active' : ''}`}
+                onClick={() => setViewMode('chat')}
               >
-                {isMobile ? (
-                  <>
-                    <button
-                      type="button"
-                      className="toggle-button toggle-button--back"
-                      onClick={() => setShowMobileContent(false)}
-                    >
-                      ← Daftar
-                    </button>
-                    <button
-                      type="button"
-                      className={mobileToggleClassName}
-                      onClick={handleToggleAi}
-                      disabled={!selectedNumber || isTogglingAi}
-                    >
-                      {mobileToggleLabel}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span className="badge">
-                      {isLoadingHistory ? 'Memuat...' : `${historyData?.messageCount || 0} pesan`}
-                    </span>
-                    <button
-                      type="button"
-                      className={toggleButtonClassName}
-                      onClick={handleToggleAi}
-                      disabled={!selectedNumber || isTogglingAi}
-                    >
-                      {toggleButtonLabel}
-                    </button>
-                  </>
-                )}
-              </div>
-            </header>
-
-            <div className="chat-panel">
-              {historyError && <div className="notice">Gagal memuat percakapan. {historyError.message}</div>}
-
-              <div className="message-list">
-                {historyData?.history?.length ? (
-                  historyData.history.map((msg, index) => {
-                    const timestampKey =
-                      typeof msg.timestamp === 'object' && msg.timestamp
-                        ? msg.timestamp.seconds
-                        : msg.timestamp ?? 'ts';
-
-                    return (
-                      <div
-                        key={`${timestampKey}-${index}`}
-                        className={`message-item ${msg.sender}`}
-                      >
-                        <div className="message-item__meta">
-                          <span className="message-item__sender">{getSenderLabel(msg.sender)}</span>
-                          <span className="message-item__time">{formatTimestamp(msg.timestamp) || '—'}</span>
-                        </div>
-                        <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="muted">Belum ada pesan untuk percakapan ini.</p>
-                )}
-              </div>
+                Chat
+              </button>
+              <button
+                className={`view-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+                onClick={() => setViewMode('calendar')}
+              >
+                Agenda
+              </button>
             </div>
-
-            <div className="composer">
-              <textarea
-                ref={messageInputRef}
-                id="message"
-                rows={1}
-                aria-label="Balasan untuk pelanggan"
-                placeholder="Tulis balasan untuk pelanggan..."
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-              />
-              <div className="composer__actions">
-                {!canSendMessages && (
-                  <span className="composer__hint">
-                    Setel <code>NEXT_PUBLIC_API_BASE_URL</code> agar admin bisa membalas via backend bot.
-                  </span>
-                )}
-                {canSendMessages && !isSupportedChannel && (
-                  <span className="composer__hint">
-                    Chat berasal dari kanal {activeChannelMeta.label}. Balasan admin UI untuk kanal ini belum didukung.
-                  </span>
-                )}
-                {canSendMessages && isSupportedChannel && !isWhatsappConversation && (
-                  <span className="composer__hint">
-                    Balasan admin akan dikirim melalui {activeChannelMeta.label}.
-                  </span>
-                )}
-                <button
-                  type="button"
-                  disabled={!selectedNumber || isSending || !canSendMessages || !isSupportedChannel}
-                  onClick={handleSendMessage}
-                >
-                  {isSending ? 'Mengirim...' : 'Kirim'}
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="empty-state">
-            <h2>Pilih percakapan</h2>
-            <p>Daftar percakapan yang tersimpan di Firestore akan muncul di sisi kiri.</p>
           </div>
-        )}
-      </section>
+
+          <label htmlFor="search" className="visually-hidden">
+            Cari pelanggan
+          </label>
+          <input
+            id="search"
+            placeholder="Cari nama, nomor, atau pesan..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+
+          {viewMode === 'chat' ? (
+            <>
+              {listError && <div className="notice">Gagal memuat daftar percakapan. {listError.message}</div>}
+              <div className="conversation-list">
+                {isLoadingList && !filteredConversations.length ? (
+                  <p className="muted">Memuat percakapan...</p>
+                ) : filteredConversations.length ? (
+                  filteredConversations.map(renderConversationItem)
+                ) : (
+                  <p className="muted">Belum ada percakapan yang tersimpan.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="sidebar__info">
+              <p className="muted">Pilih tanggal di kalender untuk melihat detail booking.</p>
+              <div className="legend">
+                <div className="legend-item"><span className="dot pending"></span> Pending</div>
+                <div className="legend-item"><span className="dot confirmed"></span> Confirmed</div>
+                <div className="legend-item"><span className="dot in_progress"></span> In Progress</div>
+                <div className="legend-item"><span className="dot completed"></span> Completed</div>
+              </div>
+            </div>
+          )}
+        </aside>
+      )}
+
+      {(!isMobile || showMobileContent) && (
+        <section className="content">
+          {viewMode === 'calendar' ? (
+            <CalendarView
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+              bookings={bookingsData?.bookings || []}
+              onSelectBooking={setSelectedBooking}
+            />
+          ) : activeConversation ? (
+            <>
+              <header className="content__header">
+                <div className="content__header-info">
+                  <h2>{getConversationDisplayName(activeConversation)}</h2>
+                  <div className="content__header-meta">
+                    <span className="muted" title={activeConversation.senderNumber}>
+                      {activeConversation.platformId || activeConversation.senderNumber}
+                    </span>
+                    <span
+                      className={`pill pill-channel ${activeChannelMeta.pillClass}`}
+                      title={activeChannelMeta.label}
+                    >
+                      {activeChannelMeta.tag}
+                    </span>
+                  </div>
+                  <div className="ai-status">
+                    <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
+                      {aiPaused ? 'AI OFF' : 'AI ON'}
+                    </span>
+                    <span className="muted ai-status__description">{aiStatusDescription}</span>
+                  </div>
+                </div>
+                <div
+                  className={`content__header-actions ${isMobile ? 'content__header-actions--mobile' : ''
+                    }`}
+                >
+                  {isMobile ? (
+                    <>
+                      <button
+                        type="button"
+                        className="toggle-button toggle-button--back"
+                        onClick={() => setShowMobileContent(false)}
+                      >
+                        ← Daftar
+                      </button>
+                      <button
+                        type="button"
+                        className={mobileToggleClassName}
+                        onClick={handleToggleAi}
+                        disabled={!selectedNumber || isTogglingAi}
+                      >
+                        {mobileToggleLabel}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="badge">
+                        {isLoadingHistory ? 'Memuat...' : `${historyData?.messageCount || 0} pesan`}
+                      </span>
+                      <button
+                        type="button"
+                        className={toggleButtonClassName}
+                        onClick={handleToggleAi}
+                        disabled={!selectedNumber || isTogglingAi}
+                      >
+                        {toggleButtonLabel}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </header>
+
+              <div className="chat-panel">
+                {historyError && <div className="notice">Gagal memuat percakapan. {historyError.message}</div>}
+
+                <div className="message-list">
+                  {historyData?.history?.length ? (
+                    historyData.history.map((msg, index) => {
+                      const timestampKey =
+                        typeof msg.timestamp === 'object' && msg.timestamp
+                          ? msg.timestamp.seconds
+                          : msg.timestamp ?? 'ts';
+
+                      return (
+                        <div
+                          key={`${timestampKey}-${index}`}
+                          className={`message-item ${msg.sender}`}
+                        >
+                          <div className="message-item__meta">
+                            <span className="message-item__sender">{getSenderLabel(msg.sender)}</span>
+                            <span className="message-item__time">{formatTimestamp(msg.timestamp) || '—'}</span>
+                          </div>
+                          <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="muted">Belum ada pesan untuk percakapan ini.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="composer">
+                <textarea
+                  ref={messageInputRef}
+                  id="message"
+                  rows={1}
+                  aria-label="Balasan untuk pelanggan"
+                  placeholder="Tulis balasan untuk pelanggan..."
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                />
+                <div className="composer__actions">
+                  {!canSendMessages && (
+                    <span className="composer__hint">
+                      Setel <code>NEXT_PUBLIC_API_BASE_URL</code> agar admin bisa membalas via backend bot.
+                    </span>
+                  )}
+                  {canSendMessages && !isSupportedChannel && (
+                    <span className="composer__hint">
+                      Chat berasal dari kanal {activeChannelMeta.label}. Balasan admin UI untuk kanal ini belum didukung.
+                    </span>
+                  )}
+                  {canSendMessages && isSupportedChannel && !isWhatsappConversation && (
+                    <span className="composer__hint">
+                      Balasan admin akan dikirim melalui {activeChannelMeta.label}.
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!selectedNumber || isSending || !canSendMessages || !isSupportedChannel}
+                    onClick={handleSendMessage}
+                  >
+                    {isSending ? 'Mengirim...' : 'Kirim'}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <h2>Pilih percakapan</h2>
+              <p>Daftar percakapan yang tersimpan di Firestore akan muncul di sisi kiri.</p>
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }
