@@ -75,6 +75,8 @@ interface ConversationResponse {
   aiPauseInfo?: AiPauseInfo;
   channel?: string | null;
   platformId?: string | null;
+  label?: string | null;
+  labelReason?: string | null;
 }
 
 interface ConversationSummary {
@@ -92,6 +94,8 @@ interface ConversationSummary {
   aiPausedReason?: string | null;
   channel?: string | null;
   platformId?: string | null;
+  label?: string | null;
+  labelReason?: string | null;
 }
 
 interface ConversationListResponse {
@@ -220,6 +224,7 @@ export default function AdminConsole() {
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
   const [selectedNumber, setSelectedNumber] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterLabel, setFilterLabel] = useState(''); // New filter state
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isTogglingAi, setIsTogglingAi] = useState(false);
@@ -343,16 +348,27 @@ export default function AdminConsole() {
 
   const filteredConversations = useMemo(() => {
     if (!listData?.conversations?.length) return [];
-    if (!searchTerm.trim()) return listData.conversations;
 
-    const keyword = searchTerm.trim().toLowerCase();
-    return listData.conversations.filter((conversation) => {
-      const numberMatch = conversation.senderNumber.toLowerCase().includes(keyword);
-      const nameMatch = conversation.name?.toLowerCase().includes(keyword);
-      const messageMatch = conversation.lastMessage?.toLowerCase().includes(keyword);
-      return numberMatch || nameMatch || messageMatch;
-    });
-  }, [listData, searchTerm]);
+    let result = listData.conversations;
+
+    // Filter by Label
+    if (filterLabel) {
+      result = result.filter((c) => c.label === filterLabel);
+    }
+
+    // Filter by Search Term
+    if (searchTerm.trim()) {
+      const keyword = searchTerm.trim().toLowerCase();
+      result = result.filter((conversation) => {
+        const numberMatch = conversation.senderNumber.toLowerCase().includes(keyword);
+        const nameMatch = conversation.name?.toLowerCase().includes(keyword);
+        const messageMatch = conversation.lastMessage?.toLowerCase().includes(keyword);
+        return numberMatch || nameMatch || messageMatch;
+      });
+    }
+
+    return result;
+  }, [listData, searchTerm, filterLabel]);
 
   const activeConversation = useMemo(() => {
     if (!selectedNumber || !listData?.conversations) return null;
@@ -507,6 +523,11 @@ export default function AdminConsole() {
               >
                 {channelMeta.tag}
               </span>
+              {conversation.label && (
+                <span className={`pill label-badge ${conversation.label}`} title={conversation.labelReason || ''}>
+                  {conversation.label.replace('_', ' ')}
+                </span>
+              )}
               {isPaused && <span className="pill pill-warning">AI OFF</span>}
             </div>
             {formattedTimestamp ? (
@@ -670,6 +691,23 @@ export default function AdminConsole() {
                 Agenda
               </button>
             </div>
+            {/* Filter Dropdown */}
+            <div className="filter-container" style={{ marginTop: '0.5rem' }}>
+              <select
+                value={filterLabel}
+                onChange={(e) => setFilterLabel(e.target.value)}
+                className="filter-select"
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-dim)', fontSize: '0.9rem' }}
+              >
+                <option value="">Semua Chat</option>
+                <option value="hot_lead">Hot Lead 🔥</option>
+                <option value="cold_lead">Cold Lead ❄️</option>
+                <option value="booking_process">Booking 📅</option>
+                <option value="scheduling">Scheduling 🕒</option>
+                <option value="completed">Completed ✅</option>
+                <option value="archive">Archive 🗄️</option>
+              </select>
+            </div>
           </div>
 
           <label htmlFor="search" className="visually-hidden">
@@ -741,6 +779,11 @@ export default function AdminConsole() {
                     <h2>{getConversationDisplayName(activeConversation)}</h2>
                     <p className="status-text">
                       {aiPaused ? 'AI Stopped' : 'AI Active'}
+                      {activeConversation.label && (
+                        <span style={{ marginLeft: '5px', fontWeight: 'bold', color: 'var(--accent-yellow)' }}>
+                          • {activeConversation.label.replace('_', ' ')}
+                        </span>
+                      )}
                     </p>
                   </div>
 
@@ -770,6 +813,14 @@ export default function AdminConsole() {
                       >
                         {activeChannelMeta.tag}
                       </span>
+                      {activeConversation.label && (
+                        <span
+                          className={`pill label-badge ${activeConversation.label}`}
+                          title={activeConversation.labelReason || ''}
+                        >
+                          {activeConversation.label.replace('_', ' ')}
+                        </span>
+                      )}
                     </div>
                     <div className="ai-status">
                       <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
