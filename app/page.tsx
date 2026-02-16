@@ -690,6 +690,13 @@ export default function AdminConsole() {
               >
                 Agenda
               </button>
+              <a
+                href="/playground"
+                className="view-btn"
+                style={{ textAlign: 'center', textDecoration: 'none' }}
+              >
+                🧪 Playground
+              </a>
             </div>
             {/* Filter Dropdown */}
             <div className="filter-container" style={{ marginTop: '0.5rem' }}>
