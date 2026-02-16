@@ -720,66 +720,79 @@ export default function AdminConsole() {
             />
           ) : activeConversation ? (
             <>
-              <header className="content__header">
-                <div className="content__header-info">
-                  <h2>{getConversationDisplayName(activeConversation)}</h2>
-                  <div className="content__header-meta">
-                    <span className="muted" title={activeConversation.senderNumber}>
-                      {activeConversation.platformId || activeConversation.senderNumber}
-                    </span>
-                    <span
-                      className={`pill pill-channel ${activeChannelMeta.pillClass}`}
-                      title={activeChannelMeta.label}
+              {isMobile ? (
+                /* Mobile Header (WhatsApp Style) */
+                <header className="content__header content__header--mobile">
+                  <button
+                    type="button"
+                    className="header-btn header-btn--back"
+                    onClick={() => setShowMobileContent(false)}
+                  >
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                  </button>
+
+                  <div className="header-avatar">
+                    <div className="avatar-placeholder">
+                      {getConversationDisplayName(activeConversation).charAt(0).toUpperCase()}
+                    </div>
+                  </div>
+
+                  <div className="header-info" onClick={() => {/* Maybe show contact info */ }}>
+                    <h2>{getConversationDisplayName(activeConversation)}</h2>
+                    <p className="status-text">
+                      {aiPaused ? 'AI Stopped' : 'AI Active'}
+                    </p>
+                  </div>
+
+                  <div className="header-actions">
+                    <button
+                      type="button"
+                      className={`header-btn header-btn--ai ${aiPaused ? 'is-off' : 'is-on'}`}
+                      onClick={handleToggleAi}
+                      title={toggleButtonLabel}
                     >
-                      {activeChannelMeta.tag}
-                    </span>
+                      {aiPaused ? 'OFF' : 'ON'}
+                    </button>
                   </div>
-                  <div className="ai-status">
-                    <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
-                      {aiPaused ? 'AI OFF' : 'AI ON'}
-                    </span>
-                    <span className="muted ai-status__description">{aiStatusDescription}</span>
-                  </div>
-                </div>
-                <div
-                  className={`content__header-actions ${isMobile ? 'content__header-actions--mobile' : ''
-                    }`}
-                >
-                  {isMobile ? (
-                    <>
-                      <button
-                        type="button"
-                        className="toggle-button toggle-button--back"
-                        onClick={() => setShowMobileContent(false)}
-                      >
-                        ← Daftar
-                      </button>
-                      <button
-                        type="button"
-                        className={mobileToggleClassName}
-                        onClick={handleToggleAi}
-                        disabled={!selectedNumber || isTogglingAi}
-                      >
-                        {mobileToggleLabel}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="badge">
-                        {isLoadingHistory ? 'Memuat...' : `${historyData?.messageCount || 0} pesan`}
+                </header>
+              ) : (
+                /* Desktop Header (Original) */
+                <header className="content__header">
+                  <div className="content__header-info">
+                    <h2>{getConversationDisplayName(activeConversation)}</h2>
+                    <div className="content__header-meta">
+                      <span className="muted" title={activeConversation.senderNumber}>
+                        {activeConversation.platformId || activeConversation.senderNumber}
                       </span>
-                      <button
-                        type="button"
-                        className={toggleButtonClassName}
-                        onClick={handleToggleAi}
-                        disabled={!selectedNumber || isTogglingAi}
+                      <span
+                        className={`pill pill-channel ${activeChannelMeta.pillClass}`}
+                        title={activeChannelMeta.label}
                       >
-                        {toggleButtonLabel}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </header>
+                        {activeChannelMeta.tag}
+                      </span>
+                    </div>
+                    <div className="ai-status">
+                      <span className={`pill ${aiPaused ? 'pill-warning' : 'pill-success'}`}>
+                        {aiPaused ? 'AI OFF' : 'AI ON'}
+                      </span>
+                      <span className="muted ai-status__description">{aiStatusDescription}</span>
+                    </div>
+                  </div>
+                  <div className="content__header-actions">
+                    <span className="badge">
+                      {isLoadingHistory ? 'Memuat...' : `${historyData?.messageCount || 0} pesan`}
+                    </span>
+                    <button
+                      type="button"
+                      className={toggleButtonClassName}
+                      onClick={handleToggleAi}
+                      disabled={!selectedNumber || isTogglingAi}
+                    >
+                      {toggleButtonLabel}
+                    </button>
+                  </div>
+                </header>
+              )}
 
               <div className="chat-panel">
                 {historyError && <div className="notice">Gagal memuat percakapan. {historyError.message}</div>}
