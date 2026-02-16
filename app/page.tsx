@@ -812,7 +812,7 @@ export default function AdminConsole() {
                         >
                           <div className="message-item__meta">
                             <span className="message-item__sender">{getSenderLabel(msg.sender)}</span>
-                            <span className="message-item__time">{formatTimestamp(msg.timestamp) || '—'}</span>
+                            <span className="message-item__time">{formatTimestamp(msg.timestamp)}</span>
                           </div>
                           <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
                         </div>

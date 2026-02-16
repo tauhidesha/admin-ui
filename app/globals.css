@@ -575,34 +575,37 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
   }
 
   .message-item.user {
-    background: var(--bg-wa-bubble-user);
-    color: var(--wa-text-primary);
+    background: var(--accent-yellow);
+    color: #000000;
     border-top-right-radius: 0;
     margin-right: 0.5rem;
+    border: 1px solid #d4d400 !important;
+    /* Restore border for definition */
   }
 
   /* Bubble Tail User */
   .message-item.user::before {
     content: "";
     position: absolute;
-    top: 0;
+    top: -1px;
+    /* Adjust for border */
     right: -8px;
     width: 0;
     height: 0;
     border: 8px solid transparent;
-    border-top-color: var(--bg-wa-bubble-user);
-    border-left-color: var(--bg-wa-bubble-user);
-    /* Creates the curve-like fill */
+    border-top-color: var(--accent-yellow);
+    border-left-color: var(--accent-yellow);
     border-right: 0;
     border-bottom: 0;
   }
 
   .message-item.ai,
   .message-item.admin {
-    background: var(--bg-wa-bubble-other);
-    color: var(--wa-text-primary);
+    background: #ffffff;
+    color: var(--text-main);
     border-top-left-radius: 0;
     margin-left: 0.5rem;
+    border: 1px solid var(--border-dim) !important;
   }
 
   /* Bubble Tail AI */
@@ -610,15 +613,35 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
   .message-item.admin::before {
     content: "";
     position: absolute;
-    top: 0;
+    top: -1px;
+    /* Adjust for border */
     left: -8px;
     width: 0;
     height: 0;
     border: 8px solid transparent;
-    border-top-color: var(--bg-wa-bubble-other);
-    border-right-color: var(--bg-wa-bubble-other);
+    border-top-color: #ffffff;
+    /* Match bg */
+    border-right-color: #ffffff;
+    /* Match bg */
     border-left: 0;
     border-bottom: 0;
+  }
+
+  /* Add border to tail to match bubble border - simplified approach */
+  .message-item.ai::after,
+  .message-item.admin::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -9px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-top-color: var(--border-dim);
+    border-right-color: var(--border-dim);
+    border-left: 0;
+    border-bottom: 0;
+    z-index: -1;
   }
 
   /* Compact text for WhatsApp look */
