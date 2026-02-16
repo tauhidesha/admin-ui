@@ -449,6 +449,7 @@ button:not(.view-btn):not(.conversation-item):hover {
 
   .content__header-actions {
     width: 100%;
+    order: 1;
     display: flex;
     justify-content: space-between;
     align-items: center;
