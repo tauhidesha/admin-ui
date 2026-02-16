@@ -854,8 +854,13 @@ export default function AdminConsole() {
                     type="button"
                     disabled={!selectedNumber || isSending || !canSendMessages || !isSupportedChannel}
                     onClick={handleSendMessage}
+                    className="send-btn"
                   >
-                    {isSending ? 'Mengirim...' : 'Kirim'}
+                    {isSending ? (
+                      <div className="spinner" style={{ width: 20, height: 20, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"></path></svg>
+                    )}
                   </button>
                 </div>
               </div>

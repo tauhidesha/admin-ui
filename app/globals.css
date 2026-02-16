@@ -164,7 +164,7 @@ textarea::placeholder {
 }
 
 /* Buttons */
-button:not(.view-btn):not(.conversation-item) {
+button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn) {
   background: var(--accent-yellow);
   border: 1px solid #d4d400;
   padding: 0.75rem 1.5rem;
@@ -176,7 +176,7 @@ button:not(.view-btn):not(.conversation-item) {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-button:not(.view-btn):not(.conversation-item):hover {
+button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):hover {
   background: var(--accent-yellow-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--accent-yellow-glow);
