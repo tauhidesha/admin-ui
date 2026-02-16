@@ -440,17 +440,36 @@ button:not(.view-btn):not(.conversation-item):hover {
 
   .content__header {
     flex-wrap: wrap;
-    gap: 1rem;
-    padding-bottom: 1rem;
+    gap: 0.5rem;
+    /* Reduced gap */
+    padding-bottom: 0.75rem;
+    /* Reduced padding */
   }
 
   .content__header-info {
     width: 100%;
     order: 2;
-    /* Move info below actions if needed, or keep standard flow */
     display: flex;
     flex-direction: column;
+    gap: 0.25rem;
+    /* Tighter gap */
+  }
+
+  .content__header-info h2 {
+    font-size: 1.25rem;
+    /* Smaller font for name */
+  }
+
+  .content__header-info .muted {
+    font-size: 0.8rem;
+    /* Smaller font for number */
+  }
+
+  .content__header-meta {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .content__header-actions {
@@ -478,7 +497,10 @@ button:not(.view-btn):not(.conversation-item):hover {
   .chat-panel {
     border-radius: 12px;
     padding: 1rem 0.5rem;
-    /* Less padding on sides */
+    flex: 1;
+    /* Allow shrinking/growing */
+    min-height: 0;
+    /* Critical for nested flex scrolling */
   }
 
   .message-list {
