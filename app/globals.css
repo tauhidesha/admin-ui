@@ -413,7 +413,11 @@ button:not(.view-btn):not(.conversation-item):hover {
 @media (max-width: 768px) {
   main {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr;
+    height: 100dvh;
+    /* Use dynamic viewport height */
+    overflow: hidden;
+    /* Prevent body scroll */
   }
 
   .sidebar {
@@ -429,7 +433,9 @@ button:not(.view-btn):not(.conversation-item):hover {
     /* Fix double padding at bottom */
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
+    /* Fill parent, don't overflow */
+    max-height: 100%;
   }
 
   .content__header {
