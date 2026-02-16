@@ -705,6 +705,8 @@ export default function AdminConsole() {
                 <option value="booking_process">Booking 📅</option>
                 <option value="scheduling">Scheduling 🕒</option>
                 <option value="completed">Completed ✅</option>
+                <option value="follow_up">Follow Up 📌</option>
+                <option value="general">General 📝</option>
                 <option value="archive">Archive 🗄️</option>
               </select>
             </div>
