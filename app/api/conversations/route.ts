@@ -55,6 +55,8 @@ export async function GET(request: Request) {
           aiPausedUntil: snoozeInfo.expiresAt,
           aiPausedManual: snoozeInfo.manual,
           aiPausedReason: snoozeInfo.reason,
+          label: data.customerLabel || null,
+          labelReason: data.labelReason || null,
         };
       })
     );

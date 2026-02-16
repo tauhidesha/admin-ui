@@ -51,6 +51,10 @@ export async function GET(
 
     history.reverse();
 
+    // Fetch parent doc for label info
+    const parentDoc = await db.collection('directMessages').doc(docId).get();
+    const parentData = parentDoc.exists ? parentDoc.data() : {};
+
     const snoozeInfo = await getSnoozeInfo(db, normalizeSenderNumber(identity.normalizedAddress));
 
     return NextResponse.json({
@@ -61,6 +65,8 @@ export async function GET(
       history,
       aiPaused: snoozeInfo.active,
       aiPauseInfo: snoozeInfo,
+      label: parentData?.customerLabel || null,
+      labelReason: parentData?.labelReason || null,
       status: 'success',
     });
   } catch (error) {
