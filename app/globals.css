@@ -437,6 +437,8 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
     border-radius: 0;
     padding: 0;
     /* Full screen content */
+    padding-bottom: 2rem;
+    /* Add bottom padding */
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -528,15 +530,17 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
   }
 
   .header-btn--ai.is-on {
-    color: #00a884;
-    font-weight: 700;
-    font-size: 0.8rem;
+    color: #bfa100;
+    /* Darker yellow for visibility against white/gray */
+    font-weight: 800;
+    font-size: 0.9rem;
   }
 
   .header-btn--ai.is-off {
-    color: #ef4444;
-    font-weight: 700;
-    font-size: 0.8rem;
+    color: #71717a;
+    /* Muted gray */
+    font-weight: 600;
+    font-size: 0.9rem;
   }
 
 
@@ -577,71 +581,33 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
   .message-item.user {
     background: var(--accent-yellow);
     color: #000000;
-    border-top-right-radius: 0;
+    border-radius: 7.5px;
+    /* Uniform radius */
     margin-right: 0.5rem;
     border: 1px solid #d4d400 !important;
-    /* Restore border for definition */
   }
 
-  /* Bubble Tail User */
+  /* Bubble Tail User REMOVED */
   .message-item.user::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    /* Adjust for border */
-    right: -8px;
-    width: 0;
-    height: 0;
-    border: 8px solid transparent;
-    border-top-color: var(--accent-yellow);
-    border-left-color: var(--accent-yellow);
-    border-right: 0;
-    border-bottom: 0;
+    display: none;
   }
 
   .message-item.ai,
   .message-item.admin {
     background: #ffffff;
     color: var(--text-main);
-    border-top-left-radius: 0;
+    border-radius: 7.5px;
+    /* Uniform radius */
     margin-left: 0.5rem;
     border: 1px solid var(--border-dim) !important;
   }
 
-  /* Bubble Tail AI */
+  /* Bubble Tail AI REMOVED */
   .message-item.ai::before,
-  .message-item.admin::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    /* Adjust for border */
-    left: -8px;
-    width: 0;
-    height: 0;
-    border: 8px solid transparent;
-    border-top-color: #ffffff;
-    /* Match bg */
-    border-right-color: #ffffff;
-    /* Match bg */
-    border-left: 0;
-    border-bottom: 0;
-  }
-
-  /* Add border to tail to match bubble border - simplified approach */
+  .message-item.admin::before,
   .message-item.ai::after,
   .message-item.admin::after {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: -9px;
-    width: 0;
-    height: 0;
-    border: 8px solid transparent;
-    border-top-color: var(--border-dim);
-    border-right-color: var(--border-dim);
-    border-left: 0;
-    border-bottom: 0;
-    z-index: -1;
+    display: none;
   }
 
   /* Compact text for WhatsApp look */
@@ -688,12 +654,13 @@ button:not(.view-btn):not(.conversation-item):not(.header-btn):not(.send-btn):ho
   }
 
   .send-btn {
-    background: #00a884;
-    /* WA Green Send Button */
-    color: white;
+    background: var(--accent-yellow);
+    /* Yellow Send Button */
+    color: #000000;
     border-radius: 50% !important;
     width: 45px;
     height: 45px;
-    border: none;
+    border: 1px solid #d4d400;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 }
