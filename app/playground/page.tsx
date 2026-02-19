@@ -445,16 +445,17 @@ export default function PlaygroundPage() {
         }
 
         .pg-settings__row {
-          display: flex;
+          display: grid;
+          grid-template-columns: 200px 1fr;
           align-items: center;
-          gap: 2rem;
+          gap: 1rem;
+          min-height: 48px;
         }
         
         .pg-settings__label {
           font-size: 0.85rem;
           font-weight: 600;
           color: #52525b; /* Zinc-600 */
-          min-width: 180px;
         }
         
         .pg-mode-toggle {
@@ -481,40 +482,45 @@ export default function PlaygroundPage() {
           color: #18181b;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-        
-        .pg-sender-input {
-          flex: 1;
-          padding: 0.6rem 1rem;
-          border-radius: 12px;
-          border: 1px solid #e4e4e7;
-          font-size: 0.9rem;
-          background: white;
-        }
+         .pg-sender-input {
+           flex: 1;
+           max-width: 450px;
+           height: 42px; /* Normalized height */
+           padding: 0 1rem;
+           border-radius: 12px;
+           border: 1px solid #e4e4e7;
+           font-size: 0.9rem;
+           background: white;
+           transition: all 0.2s;
+         }
         .pg-sender-input:focus {
            outline: none;
            border-color: #FFEA00;
            box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
         }
 
-         .pg-model-select {
-           flex: 1;
-           padding: 0.6rem 1rem;
-           border-radius: 12px;
-           border: 1px solid #e4e4e7;
-           font-size: 0.9rem;
-           background: white;
-           cursor: pointer;
-           appearance: none;
-           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-           background-repeat: no-repeat;
-           background-position: right 1rem center;
-           background-size: 1rem;
-         }
-         .pg-model-select:focus {
-            outline: none;
-            border-color: #FFEA00;
-            box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
-         }
+          .pg-model-select {
+            flex: 1;
+            max-width: 450px;
+            height: 42px; /* Normalized height */
+            padding: 0 2.5rem 0 1rem;
+            border-radius: 12px;
+            border: 1px solid #e4e4e7;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            transition: all 0.2s;
+          }
+          .pg-model-select:focus {
+             outline: none;
+             border-color: #FFEA00;
+             box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
+          }
         
         .pg-settings__hint {
           font-size: 0.78rem;
@@ -701,13 +707,16 @@ export default function PlaygroundPage() {
         
         .pg-composer__inner {
           display: flex;
-          align-items: flex-end;
-          gap: 1rem;
+          align-items: center;
+          gap: 0.75rem;
           background: #f4f4f5;
-          padding: 0.5rem 0.5rem 0.5rem 1.25rem;
-          border-radius: 20px;
+          padding: 6px 6px 6px 16px;
+          border-radius: 24px;
           border: 1px solid #e4e4e7;
           transition: all 0.2s;
+          max-width: 800px;
+          margin: 0 auto;
+          position: relative;
         }
         .pg-composer__inner:focus-within {
           background: white;
@@ -717,43 +726,50 @@ export default function PlaygroundPage() {
         
         .pg-input {
           flex: 1;
-          padding: 0.75rem 0 !important;
+          padding: 8px 0 !important;
           border: none !important;
           background: transparent !important;
           font-size: 1rem !important;
           resize: none;
-          max-height: 150px;
-          line-height: 1.5;
+          max-height: 120px;
+          line-height: 1.4;
+          display: block;
           font-family: inherit;
           color: #18181b;
+          outline: none !important;
         }
         .pg-input:focus {
           outline: none;
         }
         
         .pg-send-btn {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%; /* Circle looks better */
           background: #FFEA00;
-          border: 1px solid #d4d400;
+          border: none;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           color: #000;
           flex-shrink: 0;
-          transition: all 0.2s;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          box-shadow: 0 2px 8px rgba(255, 234, 0, 0.4);
         }
         .pg-send-btn:hover:not(:disabled) {
-          transform: scale(1.05);
+          transform: scale(1.1) rotate(-5deg);
           background: #facc15;
+          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.6);
+        }
+        .pg-send-btn:active:not(:disabled) {
+          transform: scale(0.95);
         }
         .pg-send-btn:disabled {
-          opacity: 0.4;
+          opacity: 0.5;
           cursor: not-allowed;
-          filter: grayscale(1);
+          background: #e4e4e7;
+          box-shadow: none;
         }
 
         .pg-spinner {
@@ -785,8 +801,9 @@ export default function PlaygroundPage() {
             padding: 1rem;
           }
           .pg-settings__row {
+            display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
             gap: 0.5rem;
           }
           .pg-settings__label {
