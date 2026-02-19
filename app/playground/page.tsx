@@ -333,14 +333,14 @@ export default function PlaygroundPage() {
 
         .pg-container {
           width: 100%;
-          max-width: 900px;
-          height: 85vh;
+          max-width: 1000px;
+          height: 90vh;
           display: flex;
           flex-direction: column;
           background: #ffffff;
-          border-radius: 24px;
-          border: 1px solid #e4e4e7;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Premium shadow */
+          border-radius: 32px;
+          border: 1px solid #f1f1f1;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
           overflow: hidden;
           position: relative;
         }
@@ -350,8 +350,8 @@ export default function PlaygroundPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.25rem 2rem;
-          background: #18181b; /* Zinc-950 sleek dark */
+          padding: 1.5rem 2.5rem;
+          background: #111111;
           color: white;
           flex-shrink: 0;
           z-index: 10;
@@ -368,11 +368,11 @@ export default function PlaygroundPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(255, 255, 255, 0.1);
-          transition: all 0.2s;
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.08);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .pg-back-btn:hover {
           background: rgba(255, 255, 255, 0.2);
@@ -427,14 +427,14 @@ export default function PlaygroundPage() {
         
         /* Settings */
         .pg-settings {
-          padding: 1.5rem 2rem;
-          background: #fafafa;
-          border-bottom: 1px solid #e4e4e7;
+          padding: 2rem 2.5rem;
+          background: #ffffff;
+          border-bottom: 1px solid #f1f1f1;
           flex-shrink: 0;
-          animation: slideDown 0.3s ease-out;
+          animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes slideDown {
-          from { transform: translateY(-20px); opacity: 0; }
+          from { transform: translateY(-30px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
         
@@ -453,9 +453,9 @@ export default function PlaygroundPage() {
         }
         
         .pg-settings__label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #52525b; /* Zinc-600 */
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #111111;
         }
         
         .pg-mode-toggle {
@@ -467,20 +467,20 @@ export default function PlaygroundPage() {
         }
         
         .pg-mode-btn {
-          padding: 0.5rem 1.25rem;
-          border-radius: 9px;
-          font-size: 0.85rem;
-          font-weight: 600;
+          padding: 0.6rem 1.5rem;
+          border-radius: 10px;
+          font-size: 0.9rem;
+          font-weight: 700;
           cursor: pointer;
           background: transparent;
           border: none;
-          color: #71717a;
+          color: #666666;
           transition: all 0.2s;
         }
         .pg-mode-btn.active {
-          background: white;
-          color: #18181b;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          background: #FFEA00;
+          color: #111111;
+          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.3);
         }
          .pg-sender-input {
            flex: 1;
@@ -605,11 +605,12 @@ export default function PlaygroundPage() {
         }
         
         .pg-msg__sender {
-          font-size: 0.72rem;
-          font-weight: 700;
+          font-size: 0.75rem;
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
-          color: #a1a1aa;
+          letter-spacing: 0.05em;
+          color: #999999;
+          margin-bottom: 4px;
         }
 
         .pg-msg__bubble {
@@ -624,17 +625,18 @@ export default function PlaygroundPage() {
         
         .pg-msg.user .pg-msg__bubble {
           background: #FFEA00;
-          color: #000;
-          border-bottom-right-radius: 4px;
-          font-weight: 500;
-          border: 1px solid #d4d400;
+          color: #111111;
+          border-radius: 20px 20px 4px 20px;
+          font-weight: 600;
+          border: none;
+          box-shadow: 0 4px 15px rgba(255, 234, 0, 0.2);
         }
         
         .pg-msg.ai .pg-msg__bubble {
-          background: #f4f4f5;
-          color: #18181b;
-          border-bottom-left-radius: 4px;
-          border: 1px solid #e4e4e7;
+          background: #fdfdfd;
+          color: #111111;
+          border-radius: 20px 20px 20px 4px;
+          border: 1px solid #f1f1f1;
         }
         
         .pg-msg__text {
@@ -699,43 +701,42 @@ export default function PlaygroundPage() {
         
         /* Composer */
         .pg-composer {
-          padding: 1.5rem 2rem;
-          background: white;
-          border-top: 1px solid #e4e4e7;
+          padding: 2rem 2.5rem;
+          background: #ffffff;
+          border-top: 1px solid #f1f1f1;
           flex-shrink: 0;
         }
         
         .pg-composer__inner {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          background: #f4f4f5;
-          padding: 6px 6px 6px 16px;
-          border-radius: 24px;
-          border: 1px solid #e4e4e7;
-          transition: all 0.2s;
-          max-width: 800px;
+          gap: 1rem;
+          background: #f7f7f7;
+          padding: 8px 8px 8px 20px;
+          border-radius: 30px;
+          border: 1px solid #eeeeee;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          max-width: 900px;
           margin: 0 auto;
-          position: relative;
         }
         .pg-composer__inner:focus-within {
-          background: white;
+          background: #ffffff;
           border-color: #FFEA00;
-          box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
+          box-shadow: 0 0 0 4px rgba(255, 234, 0, 0.15);
         }
         
         .pg-input {
           flex: 1;
-          padding: 8px 0 !important;
+          padding: 12px 0 !important;
           border: none !important;
           background: transparent !important;
           font-size: 1rem !important;
           resize: none;
           max-height: 120px;
-          line-height: 1.4;
+          line-height: 1.5;
           display: block;
           font-family: inherit;
-          color: #18181b;
+          color: #111111;
           outline: none !important;
         }
         .pg-input:focus {
@@ -743,19 +744,19 @@ export default function PlaygroundPage() {
         }
         
         .pg-send-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%; /* Circle looks better */
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
           background: #FFEA00;
           border: none;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          color: #000;
+          color: #111111;
           flex-shrink: 0;
-          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          box-shadow: 0 2px 8px rgba(255, 234, 0, 0.4);
+          transition: all 0.2s;
+          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.3);
         }
         .pg-send-btn:hover:not(:disabled) {
           transform: scale(1.1) rotate(-5deg);
