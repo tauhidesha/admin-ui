@@ -51,6 +51,7 @@ export default function PlaygroundPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -101,6 +102,7 @@ export default function PlaygroundPage() {
           message: userMessage.text,
           senderNumber: senderNumber || undefined,
           mode,
+          model_override: selectedModel,
         }),
       });
 
@@ -205,6 +207,20 @@ export default function PlaygroundPage() {
                   value={senderNumber}
                   onChange={(e) => setSenderNumber(e.target.value)}
                 />
+              </div>
+              <div className="pg-settings__row">
+                <label className="pg-settings__label">AI Model</label>
+                <select
+                  className="pg-model-select"
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                >
+                  <option value="gemini-flash-lite-latest">Gemini Flash Lite (Latest)</option>
+                  <option value="gemini-flash-latest">Gemini Flash (Latest)</option>
+                  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                  <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                  <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
+                </select>
               </div>
               <div className="pg-settings__hint">
                 {mode === 'admin'
@@ -479,6 +495,26 @@ export default function PlaygroundPage() {
            border-color: #FFEA00;
            box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
         }
+
+         .pg-model-select {
+           flex: 1;
+           padding: 0.6rem 1rem;
+           border-radius: 12px;
+           border: 1px solid #e4e4e7;
+           font-size: 0.9rem;
+           background: white;
+           cursor: pointer;
+           appearance: none;
+           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+           background-repeat: no-repeat;
+           background-position: right 1rem center;
+           background-size: 1rem;
+         }
+         .pg-model-select:focus {
+            outline: none;
+            border-color: #FFEA00;
+            box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
+         }
         
         .pg-settings__hint {
           font-size: 0.78rem;
