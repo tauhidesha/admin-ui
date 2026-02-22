@@ -150,6 +150,7 @@ export default function PlaygroundPage() {
     };
 
     const currentAttachments = [...attachments];
+    setMessages(prev => [...prev, userMessage]);
     setAttachments([]);
     setInput('');
     setIsLoading(true);
