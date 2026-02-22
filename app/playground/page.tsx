@@ -109,6 +109,12 @@ export default function PlaygroundPage() {
     const startTime = Date.now();
 
     try {
+      // Create the local history mapping to match Langchain format expectations (or at least simplify for backend)
+      const mappedHistory = messages.map(msg => ({
+        text: msg.text,
+        sender: msg.role === 'ai' ? 'ai' : 'user'
+      }));
+
       const res = await fetch(buildApiUrl('/test-ai'), {
         method: 'POST',
         headers: {
@@ -120,6 +126,7 @@ export default function PlaygroundPage() {
           senderNumber: senderNumber || undefined,
           mode,
           model_override: selectedModel,
+          history: senderNumber ? undefined : mappedHistory, // Only send local history if no senderNumber (Firebase) is set
         }),
       });
 
@@ -221,12 +228,16 @@ export default function PlaygroundPage() {
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Sender Number</label>
               <input
                 type="text"
-                placeholder="e.g. 628xxxxxxxxxx"
+                placeholder="opsional: e.g. 628..."
                 value={senderNumber}
                 onChange={(e) => setSenderNumber(e.target.value)}
                 style={{ padding: '0.75rem', fontSize: '0.9rem' }}
               />
-              {senderNumber && <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>✅ Memory aktif</span>}
+              {senderNumber ? (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>✅ Memory Firebase (Server) aktif</span>
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>ℹ️ Memory Lokal aktif</span>
+              )}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
