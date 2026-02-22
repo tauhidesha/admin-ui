@@ -21,7 +21,6 @@ interface ChatMessage {
   text: string;
   timestamp: Date;
   mode: 'customer' | 'admin';
-  toolCalls?: string[];
 }
 
 function escapeHtml(value: string) {
@@ -48,7 +47,6 @@ export default function PlaygroundPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'customer' | 'admin'>('customer');
   const [senderNumber, setSenderNumber] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
@@ -147,680 +145,217 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="pg-wrapper">
-      <div className="pg-container">
-        {/* Header */}
-        <div className="pg-header">
-          <div className="pg-header__left">
-            <a href="/" className="pg-back-btn" title="Kembali ke Admin Console">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12"></line>
-                <polyline points="12 19 5 12 12 5"></polyline>
-              </svg>
+    <main className="console">
+      {/* Sidebar - Matches main layout */}
+      <aside className="sidebar">
+        <div className="sidebar__header">
+          <img
+            src="/logo.png"
+            alt="Bosmat Studio"
+            className="sidebar__logo"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement?.querySelector('h1')?.style.setProperty('display', 'block');
+            }}
+          />
+          <h1 style={{ display: 'none' }}>Bosmat Admin Console</h1>
+          <div className="view-switcher" style={{ marginTop: '0.5rem' }}>
+            <a href="/" className="view-btn" style={{ textAlign: 'center', textDecoration: 'none' }}>
+              Chat
             </a>
-            <div className="pg-header__title">
-              <h1>🧪 Zoya Playground</h1>
-              <p className="pg-header__subtitle">Test AI responses tanpa WhatsApp</p>
+            <a href="/?view=calendar" className="view-btn" style={{ textAlign: 'center', textDecoration: 'none' }}>
+              Agenda
+            </a>
+            <button className="view-btn active" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+              🧪 Play
+            </button>
+          </div>
+        </div>
+
+        {/* Playground Controls as Sidebar info */}
+        <div className="sidebar__info" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem', flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Testing Mode</label>
+            <div className="view-switcher" style={{ background: 'var(--bg-deep)' }}>
+              <button
+                className={`view-btn ${mode === 'customer' ? 'active' : ''}`}
+                onClick={() => setMode('customer')}
+              >
+                👤 Customer
+              </button>
+              <button
+                className={`view-btn ${mode === 'admin' ? 'active' : ''}`}
+                onClick={() => setMode('admin')}
+              >
+                👮 Admin
+              </button>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.25rem' }}>
+              {mode === 'admin'
+                ? 'Mode Admin memicu internal tools.'
+                : 'Mode Customer simulasi chat biasa.'}
             </div>
           </div>
-          <div className="pg-header__actions">
-            <button
-              className={`pg-nav-btn ${showSettings ? 'active' : ''}`}
-              onClick={() => setShowSettings(!showSettings)}
-              title="Settings"
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Sender Number</label>
+            <input
+              type="text"
+              placeholder="e.g. 628xxxxxxxxxx"
+              value={senderNumber}
+              onChange={(e) => setSenderNumber(e.target.value)}
+              style={{ padding: '0.75rem', fontSize: '0.9rem' }}
+            />
+            {senderNumber && <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>✅ Memory aktif</span>}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>AI Model</label>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              style={{ padding: '0.75rem', fontSize: '0.9rem' }}
             >
-              ⚙️
-            </button>
-            <button className="pg-nav-btn pg-nav-btn--danger" onClick={clearChat} title="Clear Chat">
-              🗑️
-            </button>
+              <option value="gemini-flash-lite-latest">Gemini Flash Lite (Latest)</option>
+              <option value="gemini-flash-latest">Gemini Flash (Latest)</option>
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+              <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+              <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
+            </select>
           </div>
-        </div>
 
-        {/* Settings Panel */}
-        {showSettings && (
-          <div className="pg-settings">
-            <div className="pg-settings__card">
-              <div className="pg-settings__row">
-                <label className="pg-settings__label">Testing Mode</label>
-                <div className="pg-mode-toggle">
-                  <button
-                    className={`pg-mode-btn ${mode === 'customer' ? 'active' : ''}`}
-                    onClick={() => setMode('customer')}
-                  >
-                    👤 Customer
-                  </button>
-                  <button
-                    className={`pg-mode-btn ${mode === 'admin' ? 'active' : ''}`}
-                    onClick={() => setMode('admin')}
-                  >
-                    👮 Admin
-                  </button>
-                </div>
-              </div>
-              <div className="pg-settings__row">
-                <label className="pg-settings__label">Sender Number (Opsional)</label>
-                <input
-                  type="text"
-                  className="pg-sender-input"
-                  placeholder="628xxxxxxxxxx (untuk test memory)"
-                  value={senderNumber}
-                  onChange={(e) => setSenderNumber(e.target.value)}
-                />
-              </div>
-              <div className="pg-settings__row">
-                <label className="pg-settings__label">AI Model</label>
-                <select
-                  className="pg-model-select"
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                >
-                  <option value="gemini-flash-lite-latest">Gemini Flash Lite (Latest)</option>
-                  <option value="gemini-flash-latest">Gemini Flash (Latest)</option>
-                  <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                  <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-                  <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
-                </select>
-              </div>
-              <div className="pg-settings__hint">
-                {mode === 'admin'
-                  ? '👮 Mode Admin: Menggunakan prompt internal admin.'
-                  : '👤 Mode Customer: Simulasi chat pelanggan biasa.'}
-                {senderNumber && ` • Memory aktif untuk ${senderNumber}`}
-              </div>
-            </div>
+          <button
+            onClick={clearChat}
+            style={{
+              marginTop: 'auto',
+              background: 'transparent',
+              border: '1px solid var(--border-highlight)',
+              color: 'var(--text-muted)',
+              padding: '0.75rem',
+              borderRadius: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              transition: 'all 0.2s',
+              boxShadow: 'none'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = '#fef2f2'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-highlight)'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'transparent'; }}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Clear History
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <section className="content">
+        <header className="content__header">
+          <div className="content__header-info" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Zoya Playground</h2>
+            <span className="pill pill-warning">Beta</span>
           </div>
-        )}
 
-        {/* Chat Area */}
-        <div className="pg-chat-area">
-          {messages.length === 0 ? (
-            <div className="pg-empty">
-              <div className="pg-empty__icon">✨</div>
-              <h2>Zoya Playground</h2>
-              <p>Tanyakan apapun untuk mulai testing logika Zoya.</p>
-              <div className="pg-empty__tips">
-                <div className="pg-tip">💡 <strong>Shift+Enter</strong> untuk baris baru</div>
-                <div className="pg-tip">⚙️ Klik <strong>Settings</strong> untuk test memory</div>
-                <div className="pg-tip">🤖 Gunakan mode Admin untuk akses tools internal</div>
-              </div>
-            </div>
-          ) : (
-            <div className="pg-messages">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`pg-msg ${msg.role}`}>
-                  <div className="pg-msg__sender">
-                    {msg.role === 'ai' ? 'Zoya (AI)' : (mode === 'admin' ? 'Admin' : 'Pelanggan')}
-                  </div>
-                  <div className="pg-msg__bubble">
-                    <div
-                      className="pg-msg__text"
-                      dangerouslySetInnerHTML={formatWhatsappText(msg.text)}
-                    />
-                    <div className="pg-msg__meta">
-                      <span className="pg-msg__time">
-                        {msg.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="pg-msg ai typing">
-                  <div className="pg-msg__sender">Zoya (AI)</div>
-                  <div className="pg-msg__bubble">
-                    <div className="pg-typing-dots">
-                      <span></span><span></span><span></span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Status & Response Time */}
-        {(error || responseTime !== null) && (
-          <div className={`pg-status ${error ? 'error' : 'success'}`}>
-            {error ? (
-              <span className="pg-status__error">❌ {error}</span>
-            ) : (
-              <span className="pg-status__time">⚡ Latency: <strong>{responseTime}ms</strong></span>
+          <div className="content__header-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {responseTime !== null && (
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                ⚡ {responseTime}ms
+              </span>
+            )}
+            {error && (
+              <span className="pill" style={{ background: '#fef2f2', color: '#991b1b', borderColor: '#fecaca', fontSize: '0.8rem' }}>
+                ❌ {error}
+              </span>
             )}
           </div>
-        )}
+        </header>
 
-        {/* Composer */}
-        <div className="pg-composer">
-          <div className="pg-composer__inner">
-            <textarea
-              ref={textareaRef}
-              className="pg-input"
-              placeholder={mode === 'admin' ? 'Ketik sebagai Admin...' : 'Tanyakan sesuatu ke Zoya...'}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              rows={1}
-            />
-            <button
-              className="pg-send-btn"
-              onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
-            >
-              {isLoading ? (
-                <div className="pg-spinner"></div>
-              ) : (
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                </svg>
-              )}
-            </button>
+        <div className="chat-panel" style={{ padding: 0, border: 'none', background: 'transparent' }}>
+          <div className="message-list" style={{ padding: '0 1rem 1rem 0' }}>
+            {messages.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.6 }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem', filter: 'drop-shadow(0 0 10px rgba(255, 234, 0, 0.4))' }}>✨</div>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem', color: 'var(--text-main)' }}>Mulai Testing Zoya</h3>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textAlign: 'center', maxWidth: '300px' }}>
+                  Ketik pesan untuk mensimulasikan percakapan. Sesuaikan pengaturan di sidebar sebelah kiri.
+                </p>
+              </div>
+            ) : (
+              messages.map(msg => (
+                <div key={msg.id} className={`message-item ${msg.role === 'ai' ? 'ai' : (mode === 'admin' ? 'admin' : 'user')}`}>
+                  <div className="message-item__sender">
+                    {msg.role === 'ai' ? 'Zoya (AI)' : (mode === 'admin' ? 'Admin' : 'Pelanggan')}
+                  </div>
+                  <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
+                  <div className="message-item__time">
+                    {msg.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              ))
+            )}
+
+            {isLoading && (
+              <div className="message-item ai" style={{ alignSelf: 'flex-start', border: '1px solid var(--border-dim)', background: 'var(--bg-surface)' }}>
+                <div className="message-item__sender">Zoya (AI)</div>
+                <div style={{ display: 'flex', gap: '4px', padding: '0.4rem 0' }}>
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)', animation: 'ping 1.4s infinite 0s' }} />
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)', animation: 'ping 1.4s infinite 0.2s' }} />
+                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)', animation: 'ping 1.4s infinite 0.4s' }} />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="composer-wrapper" style={{ padding: '1rem 0 0', background: 'var(--bg-surface)' }}>
+            <div className="composer">
+              <textarea
+                ref={textareaRef}
+                placeholder={mode === 'admin' ? 'Ketik sebagai Admin...' : 'Tanyakan sesuatu ke Zoya...'}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                rows={1}
+                style={{ flex: 1, minHeight: '52px', borderRadius: '24px', padding: '1rem 1.25rem' }}
+              />
+              <button
+                className="send-btn"
+                onClick={sendMessage}
+                disabled={!input.trim() || isLoading}
+                style={{
+                  opacity: (!input.trim() || isLoading) ? 0.4 : 1,
+                  cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer',
+                  background: 'var(--accent-yellow)',
+                  border: '1px solid #d4d400',
+                  color: '#000'
+                }}
+              >
+                {isLoading ? (
+                  <div style={{ width: '18px', height: '18px', border: '2px solid rgba(0,0,0,0.1)', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <style jsx>{`
-        .pg-wrapper {
-          min-height: 100vh;
-          background: #f4f4f5; /*Zinc-100 matching main UI bg*/
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem;
-        }
-
-        .pg-container {
-          width: 100%;
-          max-width: 1000px;
-          height: 90vh;
-          display: flex;
-          flex-direction: column;
-          background: #ffffff;
-          border-radius: 32px;
-          border: 1px solid #f1f1f1;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-          overflow: hidden;
-          position: relative;
-        }
-        
-        /* Header */
-        .pg-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1.5rem 2.5rem;
-          background: #111111;
-          color: white;
-          flex-shrink: 0;
-          z-index: 10;
-        }
-        
-        .pg-header__left {
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-        }
-        
-        .pg-back-btn {
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.08);
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .pg-back-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateX(-2px);
-        }
-        
-        .pg-header__title h1 {
-          margin: 0;
-          font-size: 1.15rem;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-        }
-        
-        .pg-header__subtitle {
-          margin: 0;
-          font-size: 0.75rem;
-          opacity: 0.6;
-          font-weight: 400;
-        }
-        
-        .pg-header__actions {
-          display: flex;
-          gap: 0.75rem;
-        }
-        
-        .pg-nav-btn {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: white;
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-size: 1rem;
-          transition: all 0.2s;
-        }
-        .pg-nav-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        .pg-nav-btn.active {
-          background: #FFEA00;
-          color: #000;
-          border-color: #FFEA00;
-        }
-        .pg-nav-btn--danger:hover {
-          background: #ef4444;
-          border-color: #ef4444;
-        }
-        
-        /* Settings */
-        .pg-settings {
-          padding: 2rem 2.5rem;
-          background: #ffffff;
-          border-bottom: 1px solid #f1f1f1;
-          flex-shrink: 0;
-          animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes slideDown {
-          from { transform: translateY(-30px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .pg-settings__card {
-           display: flex;
-           flex-direction: column;
-           gap: 1rem;
-        }
-
-        .pg-settings__row {
-          display: grid;
-          grid-template-columns: 200px 1fr;
-          align-items: center;
-          gap: 1rem;
-          min-height: 48px;
-        }
-        
-        .pg-settings__label {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #111111;
-        }
-        
-        .pg-mode-toggle {
-          display: flex;
-          gap: 0.4rem;
-          background: #f4f4f5;
-          padding: 4px;
-          border-radius: 12px;
-        }
-        
-        .pg-mode-btn {
-          padding: 0.6rem 1.5rem;
-          border-radius: 10px;
-          font-size: 0.9rem;
-          font-weight: 700;
-          cursor: pointer;
-          background: transparent;
-          border: none;
-          color: #666666;
-          transition: all 0.2s;
-        }
-        .pg-mode-btn.active {
-          background: #FFEA00;
-          color: #111111;
-          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.3);
-        }
-         .pg-sender-input {
-           flex: 1;
-           max-width: 450px;
-           height: 42px; /* Normalized height */
-           padding: 0 1rem;
-           border-radius: 12px;
-           border: 1px solid #e4e4e7;
-           font-size: 0.9rem;
-           background: white;
-           transition: all 0.2s;
-         }
-        .pg-sender-input:focus {
-           outline: none;
-           border-color: #FFEA00;
-           box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
-        }
-
-          .pg-model-select {
-            flex: 1;
-            max-width: 450px;
-            height: 42px; /* Normalized height */
-            padding: 0 2.5rem 0 1rem;
-            border-radius: 12px;
-            border: 1px solid #e4e4e7;
-            font-size: 0.9rem;
-            background: white;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1rem;
-            transition: all 0.2s;
-          }
-          .pg-model-select:focus {
-             outline: none;
-             border-color: #FFEA00;
-             box-shadow: 0 0 0 3px rgba(255, 234, 0, 0.2);
-          }
-        
-        .pg-settings__hint {
-          font-size: 0.78rem;
-          color: #a1a1aa;
-          font-style: italic;
-        }
-        
-        /* Chat Area */
-        .pg-chat-area {
-          flex: 1;
-          overflow-y: auto;
-          background: #ffffff;
-          display: flex;
-          flex-direction: column;
-        }
-        
-        /* Empty State */
-        .pg-empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
-          text-align: center;
-          padding: 3rem;
-          color: #71717a;
-        }
-        .pg-empty__icon {
-          font-size: 3.5rem;
-          margin-bottom: 1.5rem;
-          filter: drop-shadow(0 0 10px rgba(255, 234, 0, 0.4));
-        }
-        .pg-empty h2 {
-          margin: 0 0 0.75rem;
-          color: #18181b;
-          font-size: 1.75rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-        }
-        .pg-empty p {
-          margin: 0 0 2.5rem;
-          font-size: 1rem;
-          opacity: 0.8;
-          max-width: 400px;
-        }
-        .pg-empty__tips {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-          max-width: 450px;
-        }
-        .pg-tip {
-          font-size: 0.85rem;
-          padding: 0.75rem 1.25rem;
-          background: #f8fafc;
-          border-radius: 16px;
-          border: 1px solid #e2e8f0;
-          color: #475569;
-        }
-        
-        /* Messages */
-        .pg-messages {
-          padding: 2rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-        
-        .pg-msg {
-          display: flex;
-          flex-direction: column;
-          max-width: 80%;
-          gap: 0.4rem;
-        }
-        .pg-msg.user {
-          align-self: flex-end;
-          align-items: flex-end;
-        }
-        .pg-msg.ai {
-          align-self: flex-start;
-          align-items: flex-start;
-        }
-        
-        .pg-msg__sender {
-          font-size: 0.75rem;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #999999;
-          margin-bottom: 4px;
-        }
-
-        .pg-msg__bubble {
-          padding: 1rem 1.25rem;
-          border-radius: 18px;
-          font-size: 0.95rem;
-          line-height: 1.6;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-          word-break: break-word;
-          position: relative;
-        }
-        
-        .pg-msg.user .pg-msg__bubble {
-          background: #FFEA00;
-          color: #111111;
-          border-radius: 20px 20px 4px 20px;
-          font-weight: 600;
-          border: none;
-          box-shadow: 0 4px 15px rgba(255, 234, 0, 0.2);
-        }
-        
-        .pg-msg.ai .pg-msg__bubble {
-          background: #fdfdfd;
-          color: #111111;
-          border-radius: 20px 20px 20px 4px;
-          border: 1px solid #f1f1f1;
-        }
-        
-        .pg-msg__text {
-          margin: 0;
-        }
-        
-        .pg-msg__meta {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 0.4rem;
-        }
-        .pg-msg__time {
-          font-size: 0.68rem;
-          opacity: 0.5;
-        }
-        
-        /* Typing Indicator */
-        .pg-msg.typing .pg-msg__bubble {
-          padding: 0.85rem 1.25rem;
-        }
-        .pg-typing-dots {
-          display: flex;
-          gap: 5px;
-          align-items: center;
-        }
-        .pg-typing-dots span {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #a1a1aa;
-          animation: pgBounce 1.4s ease-in-out infinite;
-        }
-        .pg-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .pg-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes pgBounce {
+      <style jsx global>{`
+        @keyframes ping {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
           40% { transform: scale(1); opacity: 1; }
         }
-        
-        /* Status */
-        .pg-status {
-          position: absolute;
-          bottom: 100px;
-          left: 50%;
-          transform: translateX(-50%);
-          padding: 0.5rem 1.25rem;
-          border-radius: 99px;
-          font-size: 0.75rem;
-          z-index: 5;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .pg-status.success {
-          background: #18181b;
-          color: #FFEA00;
-        }
-        .pg-status.error {
-          background: #fef2f2;
-          color: #991b1b;
-          border: 1px solid #fecaca;
-        }
-        
-        /* Composer */
-        .pg-composer {
-          padding: 2rem 2.5rem;
-          background: #ffffff;
-          border-top: 1px solid #f1f1f1;
-          flex-shrink: 0;
-        }
-        
-        .pg-composer__inner {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          background: #f7f7f7;
-          padding: 8px 8px 8px 20px;
-          border-radius: 30px;
-          border: 1px solid #eeeeee;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .pg-composer__inner:focus-within {
-          background: #ffffff;
-          border-color: #FFEA00;
-          box-shadow: 0 0 0 4px rgba(255, 234, 0, 0.15);
-        }
-        
-        .pg-input {
-          flex: 1;
-          padding: 12px 0 !important;
-          border: none !important;
-          background: transparent !important;
-          font-size: 1rem !important;
-          resize: none;
-          max-height: 120px;
-          line-height: 1.5;
-          display: block;
-          font-family: inherit;
-          color: #111111;
-          outline: none !important;
-        }
-        .pg-input:focus {
-          outline: none;
-        }
-        
-        .pg-send-btn {
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          background: #FFEA00;
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: #111111;
-          flex-shrink: 0;
-          transition: all 0.2s;
-          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.3);
-        }
-        .pg-send-btn:hover:not(:disabled) {
-          transform: scale(1.1) rotate(-5deg);
-          background: #facc15;
-          box-shadow: 0 4px 12px rgba(255, 234, 0, 0.6);
-        }
-        .pg-send-btn:active:not(:disabled) {
-          transform: scale(0.95);
-        }
-        .pg-send-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          background: #e4e4e7;
-          box-shadow: none;
-        }
-
-        .pg-spinner {
-          width: 20px;
-          height: 20px;
-          border: 2px solid rgba(0,0,0,0.1);
-          border-top-color: #000;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
         @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-          .pg-wrapper {
-            padding: 0;
-          }
-          .pg-container {
-            height: 100vh;
-            border-radius: 0;
-            max-width: 100%;
-            border: none;
-          }
-          .pg-header {
-            padding: 1rem;
-          }
-          .pg-settings {
-            padding: 1rem;
-          }
-          .pg-settings__row {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 0.5rem;
-          }
-          .pg-settings__label {
-            min-width: unset;
-          }
-          .pg-composer {
-            padding: 1rem;
-          }
-          .pg-messages {
-            padding: 1rem;
-          }
-          .pg-msg {
-            max-width: 90%;
-          }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
+    </main>
   );
 }
