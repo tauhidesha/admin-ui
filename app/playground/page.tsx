@@ -21,6 +21,16 @@ interface ChatMessage {
   text: string;
   timestamp: Date;
   mode: 'customer' | 'admin';
+  media?: {
+    url: string;
+    type: 'image' | 'video';
+  };
+}
+
+interface Attachment {
+  file: File;
+  preview: string;
+  type: 'image' | 'video';
 }
 
 function escapeHtml(value: string) {
@@ -50,6 +60,8 @@ export default function PlaygroundPage() {
   const [error, setError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mobile responsive states
   const [isMobile, setIsMobile] = useState(false);
@@ -89,6 +101,42 @@ export default function PlaygroundPage() {
     return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments: Attachment[] = [];
+    Array.from(files).forEach(file => {
+      const type = file.type.startsWith('video/') ? 'video' : 'image';
+      const preview = URL.createObjectURL(file);
+      newAttachments.push({ file, preview, type });
+    });
+
+    setAttachments(prev => [...prev, ...newAttachments]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => {
+      const updated = [...prev];
+      URL.revokeObjectURL(updated[index].preview);
+      updated.splice(index, 1);
+      return updated;
+    });
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]); // Remove data:mime;base64,
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -98,9 +146,11 @@ export default function PlaygroundPage() {
       text: input.trim(),
       timestamp: new Date(),
       mode,
+      media: attachments.length > 0 ? { url: attachments[0].preview, type: attachments[0].type } : undefined
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const currentAttachments = [...attachments];
+    setAttachments([]);
     setInput('');
     setIsLoading(true);
     setError(null);
@@ -115,6 +165,12 @@ export default function PlaygroundPage() {
         sender: msg.role === 'ai' ? 'ai' : 'user'
       }));
 
+      const mediaPayload = await Promise.all(currentAttachments.map(async attr => ({
+        type: attr.type,
+        mimetype: attr.file.type,
+        base64: await fileToBase64(attr.file)
+      })));
+
       const res = await fetch(buildApiUrl('/test-ai'), {
         method: 'POST',
         headers: {
@@ -127,6 +183,7 @@ export default function PlaygroundPage() {
           mode,
           model_override: selectedModel,
           history: senderNumber ? undefined : mappedHistory, // Only send local history if no senderNumber (Firebase) is set
+          media: mediaPayload.length > 0 ? mediaPayload : undefined
         }),
       });
 
@@ -359,6 +416,15 @@ export default function PlaygroundPage() {
                     <div className="message-item__sender">
                       {msg.role === 'ai' ? 'Zoya (AI)' : (mode === 'admin' ? 'Admin' : 'Pelanggan')}
                     </div>
+                    {msg.media && (
+                      <div className="message-item__media" style={{ marginBottom: '0.5rem', borderRadius: '8px', overflow: 'hidden', maxWidth: '240px' }}>
+                        {msg.media.type === 'image' ? (
+                          <img src={msg.media.url} alt="Uploaded content" style={{ width: '100%', display: 'block' }} />
+                        ) : (
+                          <video src={msg.media.url} controls style={{ width: '100%', display: 'block' }} />
+                        )}
+                      </div>
+                    )}
                     <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
                     <div className="message-item__time">
                       {msg.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
@@ -380,8 +446,51 @@ export default function PlaygroundPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="composer-wrapper" style={{ padding: '1rem 0 0', background: 'var(--bg-surface)' }}>
+            <div className="composer-wrapper" style={{ padding: '0.5rem 0 0', background: 'var(--bg-surface)' }}>
+              {attachments.length > 0 && (
+                <div style={{ display: 'flex', gap: '10px', padding: '0.5rem 0.75rem 1rem', flexWrap: 'wrap' }}>
+                  {attachments.map((attr, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-highlight)' }}>
+                      {attr.type === 'image' ? (
+                        <img src={attr.preview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '10px' }}>VIDEO</div>
+                      )}
+                      <button
+                        onClick={() => removeAttachment(idx)}
+                        style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', border: 'none', color: '#fff', width: '18px', height: '18px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', padding: 0 }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="composer">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
                 <textarea
                   ref={textareaRef}
                   placeholder={mode === 'admin' ? 'Ketik sebagai Admin...' : 'Tanyakan sesuatu ke Zoya...'}
