@@ -3,6 +3,17 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || '').replace(/\/$/, '');
+const DEFAULT_MODEL = process.env.NEXT_PUBLIC_AI_MODEL || 'gemini-2.0-flash';
+
+const AVAILABLE_MODELS = [
+  { value: '__default__', label: `⚙️ Default (${DEFAULT_MODEL})`, group: 'default' },
+  { value: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite Preview', group: '3.x' },
+  { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash (Preview)', group: '3.x' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite', group: '2.x' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', group: '2.x' },
+  { value: 'gemini-flash-latest', label: 'Gemini Flash (Latest)', group: 'latest' },
+  { value: 'gemini-flash-lite-latest', label: 'Gemini Flash Lite (Latest)', group: 'latest' },
+];
 
 const buildApiUrl = (path: string) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -59,7 +70,7 @@ export default function PlaygroundPage() {
   const [senderNumber, setSenderNumber] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
+  const [selectedModel, setSelectedModel] = useState('__default__');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -182,7 +193,7 @@ export default function PlaygroundPage() {
           message: userMessage.text,
           senderNumber: senderNumber || undefined,
           mode,
-          model_override: selectedModel,
+          model_override: selectedModel === '__default__' ? DEFAULT_MODEL : selectedModel,
           history: senderNumber ? undefined : mappedHistory, // Only send local history if no senderNumber (Firebase) is set
           media: mediaPayload.length > 0 ? mediaPayload : undefined
         }),
@@ -305,12 +316,15 @@ export default function PlaygroundPage() {
                 onChange={(e) => setSelectedModel(e.target.value)}
                 style={{ padding: '0.75rem', fontSize: '0.9rem' }}
               >
-                <option value="gemini-flash-lite-latest">Gemini Flash Lite (Latest)</option>
-                <option value="gemini-flash-latest">Gemini Flash (Latest)</option>
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-                <option value="gemini-3-flash-preview">Gemini 3 Flash (Preview)</option>
+                {AVAILABLE_MODELS.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
               </select>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '0.15rem' }}>
+                ENV default: <code style={{ background: 'var(--bg-deep)', padding: '0.1rem 0.35rem', borderRadius: '4px', fontSize: '0.7rem' }}>{DEFAULT_MODEL}</code>
+              </span>
             </div>
 
             {isMobile && (
