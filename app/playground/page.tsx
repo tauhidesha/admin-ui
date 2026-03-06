@@ -36,6 +36,11 @@ interface ChatMessage {
     url: string;
     type: 'image' | 'video';
   };
+  runId?: string;
+  feedback?: {
+    score: number;
+    comment?: string;
+  };
 }
 
 interface Attachment {
@@ -215,6 +220,7 @@ export default function PlaygroundPage() {
         text: data.ai_response || '(No response)',
         timestamp: new Date(),
         mode,
+        runId: data.run_id,
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -223,6 +229,31 @@ export default function PlaygroundPage() {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const submitFeedback = async (messageId: string, runId: string, score: number) => {
+    try {
+      const res = await fetch(buildApiUrl('/langsmith/feedback'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify({
+          runId,
+          key: 'user-feedback',
+          score,
+        }),
+      });
+
+      if (res.ok) {
+        setMessages(prev => prev.map(msg =>
+          msg.id === messageId ? { ...msg, feedback: { score } } : msg
+        ));
+      }
+    } catch (err) {
+      console.error('Failed to submit feedback:', err);
     }
   };
 
@@ -441,6 +472,41 @@ export default function PlaygroundPage() {
                       </div>
                     )}
                     <div dangerouslySetInnerHTML={formatWhatsappText(msg.text)} />
+
+                    {msg.role === 'ai' && msg.runId && (
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px', opacity: msg.feedback ? 1 : 0.6 }}>
+                        <button
+                          onClick={() => !msg.feedback && submitFeedback(msg.id, msg.runId!, 1)}
+                          style={{
+                            background: msg.feedback?.score === 1 ? 'rgba(34, 197, 94, 0.1)' : 'transparent',
+                            border: `1px solid ${msg.feedback?.score === 1 ? '#22c55e' : 'var(--border-highlight)'}`,
+                            color: msg.feedback?.score === 1 ? '#22c55e' : 'var(--text-dim)',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            cursor: msg.feedback ? 'default' : 'pointer'
+                          }}
+                        >
+                          👍
+                        </button>
+                        <button
+                          onClick={() => !msg.feedback && submitFeedback(msg.id, msg.runId!, 0)}
+                          style={{
+                            background: msg.feedback?.score === 0 ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                            border: `1px solid ${msg.feedback?.score === 0 ? '#ef4444' : 'var(--border-highlight)'}`,
+                            color: msg.feedback?.score === 0 ? '#ef4444' : 'var(--text-dim)',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            cursor: msg.feedback ? 'default' : 'pointer'
+                          }}
+                        >
+                          👎
+                        </button>
+                        {msg.feedback && <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center' }}>Terima kasih!</span>}
+                      </div>
+                    )}
+
                     <div className="message-item__time">
                       {msg.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                     </div>
